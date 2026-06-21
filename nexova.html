@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXOVA — Ingeniería Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#0B0C0E;
+  --panel:#15171A;
+  --panel2:#1B1E22;
+  --copper:#B8763F;
+  --copper-dim:#8A5C32;
+  --bone:#EDEDE8;
+  --grey:#6B6E73;
+  --line:rgba(237,237,232,.08);
+  --line-strong:rgba(237,237,232,.14);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--void);
+  color:var(--bone);
+  font-family:'Inter',sans-serif;
+  font-weight:300;
+  overflow-x:hidden;
+}
+::selection{background:var(--copper);color:var(--void);}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+}
+
+/* ============ ENTRY SEQUENCE ============ */
+#entry-overlay{
+  position:fixed; inset:0; z-index:10000;
+  background:var(--void);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+#blueprint-canvas{ position:absolute; inset:0; width:100%; height:100%; opacity:.7; z-index:1; }
+
+#entry-overlay::before{
+  /* fine vignette */
+  content:'';
+  position:absolute; inset:0;
+  z-index:1;
+  background:radial-gradient(ellipse at center, transparent 30%, var(--void) 100%);
+  pointer-events:none;
+}
+
+.entry-ui{
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:center; gap:2.2rem;
+  opacity:1; transition:opacity .7s ease;
+}
+.entry-ui.fade{ opacity:0; pointer-events:none; }
+
+.entry-mark{
+  font-family:'Fraunces',serif;
+  font-weight:500; font-size:1.6rem;
+  letter-spacing:.02em;
+  color:var(--bone);
+}
+.entry-mark span{ color:var(--copper); font-style:italic; }
+
+.entry-rule{
+  width:1px; height:40px;
+  background:linear-gradient(var(--copper), transparent);
+}
+
+.lang-select{
+  display:flex; align-items:center; gap:.7rem;
+}
+.lang-btn{
+  background:none; border:none;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.7rem; letter-spacing:.1em;
+  color:var(--grey); cursor:pointer;
+  padding:.3rem .2rem;
+  transition:color .3s;
+  position:relative;
+}
+.lang-btn::after{
+  content:''; position:absolute; left:0; bottom:-3px;
+  width:0; height:1px; background:var(--copper);
+  transition:width .3s;
+}
+.lang-btn.active{ color:var(--copper); }
+.lang-btn.active::after{ width:100%; }
+.lang-btn:hover{ color:var(--bone); }
+.lang-sep{ color:var(--line-strong); font-size:.7rem; }
+
+.enter-btn{
+  position:relative;
+  width:108px; height:108px;
+  border-radius:50%;
+  border:1px solid var(--line-strong);
+  background:transparent;
+  color:var(--bone);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.66rem; font-weight:400;
+  letter-spacing:.16em; text-transform:uppercase;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .4s, border-color .5s, background .4s;
+}
+.enter-btn:hover{
+  border-color:var(--copper);
+  background:rgba(184,118,63,.05);
+  transform:scale(1.04);
+}
+.enter-btn::before{
+  content:'';
+  position:absolute; inset:-22px;
+  border-radius:50%;
+  border:1px solid rgba(184,118,63,.12);
+}
+.enter-btn::after{
+  content:'';
+  position:absolute; top:-1px; left:50%;
+  width:1px; height:10px;
+  background:var(--copper);
+  transform:translateX(-50%);
+}
+
+.entry-caption{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.68rem; color:var(--grey);
+  letter-spacing:.1em;
+}
+
+.entry-progress{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.66rem; color:var(--copper);
+  letter-spacing:.12em;
+  display:flex; align-items:center; gap:.8rem;
+  opacity:0;
+}
+.entry-progress.show{opacity:1;}
+.eprog-bar{
+  width:160px; height:1px; background:var(--line);
+  position:relative; overflow:hidden;
+}
+.eprog-fill{
+  position:absolute; left:0; top:0; height:100%; width:0%;
+  background:var(--copper);
+}
+
+#entry-overlay.fading{ transition:opacity 1s ease; opacity:0; }
+#entry-overlay.done{ display:none; }
+
+/* ============ SOUND TOGGLE ============ */
+#sound-toggle{
+  position:fixed; bottom:32px; right:32px; z-index:500;
+  width:42px; height:42px; border-radius:50%;
+  background:rgba(21,23,26,.85);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition:border-color .3s;
+}
+#sound-toggle:hover{ border-color:var(--copper); }
+#sound-toggle svg{ width:15px; height:15px; }
+
+/* ============ NAV ============ */
+nav{
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1.6rem 4rem;
+  background:rgba(11,12,14,.7);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+  opacity:0; transform:translateY(-16px);
+  transition:opacity .9s ease, transform .9s ease;
+}
+nav.show{ opacity:1; transform:translateY(0); }
+.nav-logo{
+  font-family:'Fraunces',serif;
+  font-weight:500; font-size:1.3rem; letter-spacing:.01em;
+}
+.nav-logo em{ color:var(--copper); font-style:italic; }
+.nav-links{ display:flex; gap:2.8rem; list-style:none; }
+.nav-links a{
+  color:var(--grey); text-decoration:none;
+  font-size:.84rem; font-weight:400;
+  letter-spacing:.01em;
+  transition:color .3s;
+}
+.nav-links a:hover{color:var(--bone);}
+.nav-cta{
+  border:1px solid var(--copper-dim); color:var(--copper);
+  padding:.55rem 1.4rem; border-radius:2px;
+  font-size:.8rem; font-weight:400;
+  text-decoration:none; letter-spacing:.01em;
+  transition:background .3s, color .3s;
+}
+.nav-cta:hover{ background:var(--copper); color:var(--void); }
+
+.nav-right{ display:flex; align-items:center; gap:1.6rem; }
+
+.lang-select-nav{
+  display:flex; align-items:center; gap:.5rem;
+}
+.lang-btn-nav{
+  background:none; border:none;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.72rem; letter-spacing:.06em;
+  color:var(--grey); cursor:pointer;
+  padding:.2rem .15rem;
+  transition:color .3s;
+  position:relative;
+}
+.lang-btn-nav::after{
+  content:''; position:absolute; left:0; bottom:-3px;
+  width:0; height:1px; background:var(--copper);
+  transition:width .3s;
+}
+.lang-btn-nav.active{ color:var(--copper); }
+.lang-btn-nav.active::after{ width:100%; }
+.lang-btn-nav:hover{ color:var(--bone); }
+
+@media(max-width:768px){
+  .nav-right{ gap:1rem; }
+}
+
+/* ============ MAIN CONTENT ============ */
+#main-content{ opacity:0; }
+#main-content.show{ opacity:1; transition:opacity 1.2s ease .3s; }
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:flex; flex-direction:column; justify-content:center;
+  position:relative; padding:7rem 4rem 2rem;
+  overflow:hidden;
+  border-bottom:1px solid var(--line);
+}
+#hero-canvas{ position:absolute; inset:0; z-index:0; opacity:.35; }
+
+.hero-grain{
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+.hero-inner{ max-width:920px; position:relative; z-index:1; }
+
+.hero-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.74rem; color:var(--copper);
+  letter-spacing:.16em; text-transform:uppercase;
+  margin-bottom:2.2rem;
+  display:flex; align-items:center; gap:.7rem;
+}
+.hero-eyebrow::before{ content:''; width:24px; height:1px; background:var(--copper); }
+
+.hero h1{
+  font-family:'Fraunces',serif;
+  font-weight:500;
+  font-size:clamp(2.6rem,6vw,5.2rem);
+  line-height:1.06;
+  letter-spacing:-.01em;
+  margin-bottom:2rem;
+  max-width:820px;
+}
+.hero h1 em{ font-style:italic; color:var(--copper); font-weight:400; }
+
+.hero p{
+  font-size:1.08rem; color:var(--grey); max-width:540px;
+  line-height:1.85;
+  margin-bottom:3rem; font-weight:300;
+}
+
+.hero-ctas{ display:flex; gap:1rem; flex-wrap:wrap; align-items:center; }
+.btn-primary{
+  background:var(--copper); color:var(--void);
+  padding:1rem 2.3rem; border-radius:2px;
+  font-weight:500; font-size:.92rem;
+  text-decoration:none; letter-spacing:.01em;
+  transition:background .3s, transform .3s;
+}
+.btn-primary:hover{ background:#C8854D; transform:translateY(-2px); }
+.btn-ghost{
+  border:1px solid var(--line-strong); color:var(--bone);
+  padding:1rem 2.3rem; border-radius:2px;
+  font-weight:400; font-size:.92rem;
+  text-decoration:none;
+  transition:border-color .3s;
+}
+.btn-ghost:hover{ border-color:var(--copper); }
+
+.hero-meta{
+  position:absolute; bottom:2.5rem; right:4rem; z-index:1;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.68rem; color:var(--grey);
+  letter-spacing:.08em; text-align:right;
+  display:flex; flex-direction:column; gap:.3rem;
+}
+
+@media(max-width:768px){ .hero-meta{ display:none; } }
+
+/* ── SERVICE CAROUSEL (auto-scrolling, draggable, clickable) ── */
+.carousel-section{
+  border-bottom:1px solid var(--line);
+  background:var(--panel);
+  position:relative; z-index:1;
+  padding:2rem 0;
+  overflow:hidden;
+}
+.carousel-viewport{
+  overflow:hidden;
+  cursor:grab;
+  width:100%;
+}
+.carousel-viewport.dragging{ cursor:grabbing; }
+.carousel-track{
+  display:flex; gap:1.1rem;
+  width:max-content;
+  user-select:none;
+  padding-left:4rem;
+}
+.car-card{
+  width:280px; flex-shrink:0;
+  background:var(--void);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:1.8rem 1.7rem;
+  cursor:pointer;
+  transition:border-color .35s, transform .35s, background .35s;
+  position:relative;
+}
+.car-card:hover{
+  border-color:var(--copper-dim);
+  background:rgba(184,118,63,.03);
+  transform:translateY(-4px);
+}
+.car-card-num{
+  font-family:'JetBrains Mono',monospace; font-size:.7rem;
+  color:var(--copper); letter-spacing:.06em; margin-bottom:1.2rem;
+}
+.car-card h4{
+  font-family:'Fraunces',serif; font-weight:500; font-size:1.18rem;
+  margin-bottom:.6rem; letter-spacing:-.005em;
+}
+.car-card p{
+  color:var(--grey); font-size:.84rem; line-height:1.7;
+  margin-bottom:1.3rem;
+}
+.car-card-cta{
+  font-family:'JetBrains Mono',monospace; font-size:.68rem;
+  color:var(--grey); letter-spacing:.06em; text-transform:uppercase;
+  display:flex; align-items:center; gap:.5rem;
+  transition:color .3s, gap .3s;
+}
+.car-card:hover .car-card-cta{ color:var(--copper); gap:.7rem; }
+
+@media(max-width:768px){
+  .carousel-track{ padding-left:1.5rem; }
+}
+
+/* ── SERVICE DETAIL MODAL ── */
+.modal-overlay{
+  position:fixed; inset:0; z-index:2000;
+  background:rgba(11,12,14,.82);
+  backdrop-filter:blur(6px);
+  display:flex; align-items:center; justify-content:center;
+  padding:2rem;
+  opacity:0; pointer-events:none;
+  transition:opacity .35s ease;
+}
+.modal-overlay.open{ opacity:1; pointer-events:auto; }
+
+.modal-panel{
+  background:var(--panel);
+  border:1px solid var(--line-strong);
+  max-width:640px; width:100%;
+  max-height:86vh; overflow-y:auto;
+  position:relative;
+  transform:translateY(24px) scale(.98);
+  transition:transform .4s cubic-bezier(.2,.8,.2,1);
+}
+.modal-overlay.open .modal-panel{ transform:translateY(0) scale(1); }
+
+.modal-top{
+  padding:2.6rem 2.8rem 2rem;
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.modal-close{
+  position:absolute; top:1.8rem; right:1.8rem;
+  width:36px; height:36px; border-radius:50%;
+  border:1px solid var(--line-strong); background:transparent;
+  color:var(--bone); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:border-color .3s, transform .3s;
+}
+.modal-close:hover{ border-color:var(--copper); transform:rotate(90deg); }
+.modal-close svg{ width:14px; height:14px; }
+
+.modal-num{
+  font-family:'JetBrains Mono',monospace; font-size:.72rem;
+  color:var(--copper); letter-spacing:.1em; margin-bottom:1.1rem;
+}
+.modal-top h3{
+  font-family:'Fraunces',serif; font-weight:500;
+  font-size:clamp(1.6rem,3vw,2.1rem); letter-spacing:-.01em;
+  margin-bottom:1rem; max-width:80%;
+}
+.modal-top p{ color:var(--grey); line-height:1.8; font-size:.96rem; }
+
+.modal-body{ padding:2.2rem 2.8rem 2.6rem; }
+.modal-block{ margin-bottom:2rem; }
+.modal-block:last-of-type{ margin-bottom:2.4rem; }
+.modal-block-label{
+  font-family:'JetBrains Mono',monospace; font-size:.68rem;
+  color:var(--copper); letter-spacing:.12em; text-transform:uppercase;
+  margin-bottom:.9rem;
+}
+.modal-block p{ color:var(--bone); font-size:.94rem; line-height:1.8; font-weight:300; }
+.modal-includes{ list-style:none; }
+.modal-includes li{
+  padding:.65rem 0; border-bottom:1px solid var(--line);
+  font-size:.9rem; color:var(--bone); font-weight:300;
+  display:flex; align-items:baseline; gap:.7rem;
+}
+.modal-includes li:last-child{ border-bottom:none; }
+.modal-includes li::before{
+  content:'—'; color:var(--copper); flex-shrink:0;
+}
+.modal-cta{
+  display:inline-flex; align-items:center; gap:.6rem;
+  background:var(--copper); color:var(--void);
+  padding:.9rem 2rem; border-radius:2px;
+  font-weight:500; font-size:.9rem;
+  text-decoration:none; letter-spacing:.01em;
+  transition:background .3s, transform .3s;
+}
+.modal-cta:hover{ background:#C8854D; transform:translateY(-2px); }
+
+body.modal-open{ overflow:hidden; }
+
+/* ── SECTION SHARED ── */
+section{ padding:8rem 4rem; position:relative; }
+.sec-head{ max-width:680px; margin-bottom:4.5rem; }
+.sec-eyebrow{
+  font-family:'JetBrains Mono',monospace; font-size:.72rem;
+  color:var(--copper); letter-spacing:.16em; text-transform:uppercase;
+  margin-bottom:1.4rem;
+}
+.sec-title{
+  font-family:'Fraunces',serif; font-weight:500;
+  font-size:clamp(1.9rem,3.6vw,2.9rem); line-height:1.15; letter-spacing:-.01em;
+  margin-bottom:1.3rem;
+}
+.sec-title em{ font-style:italic; color:var(--copper); font-weight:400; }
+.sec-sub{ color:var(--grey); line-height:1.85; font-size:1.02rem; }
+
+.reveal{ opacity:0; transform:translateY(36px); transition:opacity .9s ease, transform .9s ease; }
+.reveal.in{ opacity:1; transform:translateY(0); }
+
+/* ── SERVICES: PRECISION GRID ── */
+#services{ background:var(--void); }
+.svc-list{ border-top:1px solid var(--line); }
+.svc-row{
+  display:grid; grid-template-columns:90px 1fr 320px;
+  gap:2.5rem; align-items:start;
+  padding:2.6rem 0;
+  border-bottom:1px solid var(--line);
+  transition:background .4s;
+  cursor:default;
+}
+.svc-row:hover{ background:rgba(184,118,63,.025); }
+.svc-row:hover .svc-num{ color:var(--copper); }
+.svc-num{
+  font-family:'JetBrains Mono',monospace; font-size:.78rem;
+  color:var(--grey); letter-spacing:.05em; padding-top:.3rem;
+  transition:color .4s;
+}
+.svc-main h3{
+  font-family:'Fraunces',serif; font-weight:500; font-size:1.55rem;
+  margin-bottom:.7rem; letter-spacing:-.01em;
+}
+.svc-main p{ color:var(--grey); font-size:.94rem; line-height:1.8; max-width:460px; }
+.svc-tags{
+  display:flex; flex-wrap:wrap; gap:.5rem; align-content:flex-start;
+  padding-top:.4rem;
+}
+.svc-tag{
+  font-family:'JetBrains Mono',monospace; font-size:.66rem;
+  color:var(--grey); border:1px solid var(--line-strong);
+  padding:.3rem .7rem; border-radius:2px; letter-spacing:.03em;
+  height:fit-content;
+}
+
+@media(max-width:900px){
+  .svc-row{ grid-template-columns:50px 1fr; }
+  .svc-tags{ grid-column:1/-1; }
+}
+
+/* ── PROCESS ── */
+#process{ background:var(--panel); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.process-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--line); margin-top:1rem; }
+.proc-cell{
+  background:var(--panel); padding:2.4rem 1.8rem;
+  position:relative;
+}
+.proc-num{
+  font-family:'Fraunces',serif; font-style:italic; font-weight:400;
+  font-size:2.4rem; color:var(--copper-dim); line-height:1; margin-bottom:1.6rem;
+}
+.proc-title{ font-weight:500; font-size:.98rem; margin-bottom:.7rem; color:var(--bone); }
+.proc-desc{ color:var(--grey); font-size:.82rem; line-height:1.7; }
+@media(max-width:900px){ .process-grid{ grid-template-columns:1fr 1fr; } }
+@media(max-width:560px){ .process-grid{ grid-template-columns:1fr; } }
+
+/* ── STATS ── */
+#stats{ background:var(--void); }
+.stats-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:2rem; border-top:1px solid var(--line); padding-top:3.5rem; }
+.stat-block{ }
+.stat-num{
+  font-family:'Fraunces',serif; font-weight:500;
+  font-size:clamp(2.1rem,3.8vw,3rem);
+  color:var(--bone); margin-bottom:.6rem;
+  font-variant-numeric:tabular-nums;
+}
+.stat-num em{ color:var(--copper); font-style:italic; }
+.stat-label{ font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--grey); letter-spacing:.06em; text-transform:uppercase; }
+@media(max-width:768px){ .stats-grid{ grid-template-columns:1fr 1fr; } }
+
+/* ── CTA ── */
+#cta{
+  background:var(--panel); border-top:1px solid var(--line);
+}
+.cta-inner{ max-width:680px; }
+.cta-title{
+  font-family:'Fraunces',serif; font-weight:500;
+  font-size:clamp(2rem,4.2vw,3.4rem); line-height:1.15; letter-spacing:-.01em;
+  margin-bottom:1.6rem;
+}
+.cta-title em{ color:var(--copper); font-style:italic; font-weight:400; }
+.cta-sub{ color:var(--grey); margin-bottom:2.8rem; line-height:1.85; font-size:1.02rem; }
+
+/* ── CONTACT FORM ── */
+.contact-form{ max-width:680px; }
+.cf-row{ display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-bottom:1.4rem; }
+.cf-group{ margin-bottom:1.4rem; }
+.cf-label{
+  font-family:'JetBrains Mono',monospace; font-size:.68rem;
+  color:var(--grey); letter-spacing:.1em; text-transform:uppercase;
+  display:block; margin-bottom:.7rem;
+}
+.cf-input, .cf-textarea, .cf-select{
+  width:100%; background:var(--void); border:1px solid var(--line-strong);
+  color:var(--bone); font-family:'Inter',sans-serif; font-size:.92rem;
+  padding:.85rem 1rem; border-radius:2px; outline:none;
+  transition:border-color .3s;
+}
+.cf-input:focus, .cf-textarea:focus, .cf-select:focus{ border-color:var(--copper); }
+.cf-textarea{ resize:vertical; min-height:120px; line-height:1.7; }
+.cf-select{ cursor:pointer; }
+.cf-hint{ font-size:.78rem; color:var(--grey); margin-top:.6rem; line-height:1.6; }
+
+.cf-check-grid{ display:grid; grid-template-columns:1fr 1fr; gap:.7rem; }
+.cf-check{
+  border:1px solid var(--line-strong); padding:.8rem .95rem; border-radius:2px;
+  cursor:pointer; display:flex; align-items:center; gap:.7rem;
+  transition:border-color .25s, background .25s;
+}
+.cf-check:hover{ border-color:var(--copper-dim); }
+.cf-check.selected{ border-color:var(--copper); background:rgba(184,118,63,.06); }
+.cf-check input{ display:none; }
+.cf-check-box{
+  width:15px; height:15px; border:1px solid var(--grey); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; transition:all .2s;
+}
+.cf-check.selected .cf-check-box{ border-color:var(--copper); background:var(--copper); }
+.cf-check-tick{ display:none; color:var(--void); font-size:9px; }
+.cf-check.selected .cf-check-tick{ display:block; }
+.cf-check-label{ font-size:.84rem; color:var(--bone); }
+
+.cf-submit{
+  background:var(--copper); color:var(--void); border:none;
+  padding:1rem 2.3rem; border-radius:2px; font-weight:500; font-size:.92rem;
+  letter-spacing:.01em; cursor:pointer; transition:background .3s, transform .3s;
+}
+.cf-submit:hover{ background:#C8854D; transform:translateY(-2px); }
+.cf-direct{ margin-top:1.6rem; display:flex; gap:1.6rem; flex-wrap:wrap; }
+.cf-direct a{ color:var(--grey); font-size:.84rem; text-decoration:none; transition:color .3s; }
+.cf-direct a:hover{ color:var(--copper); }
+
+.cf-success{ display:none; padding:2.4rem 0; }
+.cf-success.show{ display:block; }
+.cf-success-mark{ color:var(--copper); font-family:'Fraunces',serif; font-style:italic; font-size:1.4rem; margin-bottom:.8rem; }
+.cf-success p{ color:var(--grey); line-height:1.8; font-size:.96rem; max-width:480px; }
+
+@media(max-width:768px){
+  .cf-row{ grid-template-columns:1fr; }
+  .cf-check-grid{ grid-template-columns:1fr; }
+}
+
+/* ── OPEN SECTION ── */
+#open{ background:var(--void); }
+.open-inner{ max-width:780px; }
+.open-quote{
+  font-family:'Fraunces',serif; font-style:italic; font-weight:400;
+  font-size:clamp(1.3rem,2.4vw,1.7rem); line-height:1.6; color:var(--bone);
+  margin-bottom:2.6rem; max-width:620px;
+}
+.open-quote em{ color:var(--copper); font-style:italic; }
+.open-form{ max-width:680px; }
+.open-textarea{
+  width:100%; background:var(--panel); border:1px solid var(--line-strong);
+  color:var(--bone); font-family:'Inter',sans-serif; font-size:1rem; line-height:1.8;
+  padding:1.3rem 1.4rem; border-radius:2px; outline:none; resize:vertical;
+  min-height:160px; transition:border-color .3s; margin-bottom:1.2rem;
+}
+.open-textarea:focus{ border-color:var(--copper); }
+.open-foot{ display:flex; align-items:center; justify-content:space-between; gap:1.2rem; flex-wrap:wrap; }
+.open-foot-input{
+  background:var(--panel); border:1px solid var(--line-strong); color:var(--bone);
+  font-family:'JetBrains Mono',monospace; font-size:.84rem;
+  padding:.85rem 1.1rem; border-radius:2px; outline:none; flex:1; min-width:220px;
+  transition:border-color .3s;
+}
+.open-foot-input:focus{ border-color:var(--copper); }
+.open-success{ display:none; padding:1.6rem 0; }
+.open-success.show{ display:block; }
+
+/* ── FOOTER ── */
+footer{
+  padding:3rem 4rem; border-top:1px solid var(--line);
+  display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem;
+}
+.footer-logo{ font-family:'Fraunces',serif; font-weight:500; }
+.footer-logo em{ color:var(--copper); font-style:italic; }
+footer p{ color:var(--grey); font-size:.78rem; }
+.footer-links{ display:flex; gap:2rem; }
+.footer-links a{ color:var(--grey); text-decoration:none; font-size:.8rem; transition:color .3s; }
+.footer-links a:hover{ color:var(--copper); }
+
+@media(max-width:768px){
+  section{ padding:5rem 1.5rem; }
+  nav{ padding:1.2rem 1.5rem; }
+  .nav-links{ display:none; }
+  .hero{ padding:6.5rem 1.5rem 2rem; }
+  footer{ padding:2.5rem 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ ENTRY SEQUENCE ============ -->
+<div id="entry-overlay">
+  <canvas id="blueprint-canvas"></canvas>
+  <div class="entry-ui" id="entryUI">
+    <div class="entry-mark">NEX<em>OVA</em></div>
+
+    <div class="lang-select" id="langSelect">
+      <button class="lang-btn active" data-lang="es" id="langEs">ESPAÑOL</button>
+      <span class="lang-sep">/</span>
+      <button class="lang-btn" data-lang="en" id="langEn">ENGLISH</button>
+    </div>
+
+    <div class="entry-rule"></div>
+    <button class="enter-btn" id="enterBtn" data-i18n="entry.enter">Ingresar</button>
+    <div class="entry-caption" data-i18n="entry.caption">INGENIERÍA DIGITAL — ACCESO AL SISTEMA</div>
+    <div class="entry-progress" id="entryProgress">
+      <span data-i18n="entry.loading">INICIALIZANDO</span>
+      <div class="eprog-bar"><div class="eprog-fill" id="eprogFill"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SOUND TOGGLE ============ -->
+<div id="sound-toggle" data-sound="ui">
+  <svg id="soundIconOn" viewBox="0 0 24 24" fill="none" stroke="#B8763F" stroke-width="1.4"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+  <svg id="soundIconOff" viewBox="0 0 24 24" fill="none" stroke="#6B6E73" stroke-width="1.4" style="display:none"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+</div>
+
+<!-- ============ NAV ============ -->
+<nav id="mainNav">
+  <div class="nav-logo">NEX<em>OVA</em></div>
+  <ul class="nav-links">
+    <li><a href="#services" data-sound="ui" data-i18n="nav.services">Servicios</a></li>
+    <li><a href="#process" data-sound="ui" data-i18n="nav.process">Metodología</a></li>
+    <li><a href="#cta" data-sound="ui" data-i18n="nav.contact">Contacto</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-select-nav" id="langSelectNav">
+      <button class="lang-btn-nav active" data-lang="es" id="navLangEs">ES</button>
+      <span class="lang-sep">/</span>
+      <button class="lang-btn-nav" data-lang="en" id="navLangEn">EN</button>
+    </div>
+    <a href="#cta" class="nav-cta" data-sound="confirm" data-i18n="nav.cta">Solicitar diagnóstico</a>
+  </div>
+</nav>
+
+<!-- ============ MAIN CONTENT ============ -->
+<div id="main-content">
+
+  <!-- HERO -->
+  <section class="hero">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-grain"></div>
+    <div class="hero-inner">
+      <div class="hero-eyebrow" data-i18n="hero.eyebrow">Ingeniería digital para operaciones serias</div>
+      <h1 data-i18n="hero.title">Sistemas que sostienen<br>la operación de <em>tu empresa,</em><br>no solo su apariencia</h1>
+      <p data-i18n="hero.sub">Desarrollamos software, datos e infraestructura con el mismo estándar de precisión que exige tu negocio — sin atajos, sin plantillas.</p>
+      <div class="hero-ctas">
+        <a href="#cta" class="btn-primary" data-sound="confirm" data-i18n="hero.ctaPrimary">Solicitar diagnóstico →</a>
+        <a href="#services" class="btn-ghost" data-sound="ui" data-i18n="hero.ctaGhost">Ver capacidades</a>
+      </div>
+    </div>
+    <div class="hero-meta">
+      <span>NEXOVA GT</span>
+      <span data-i18n="hero.est">EST. 2026</span>
+    </div>
+  </section>
+
+  <!-- SERVICE CAROUSEL -->
+  <div class="carousel-section">
+    <div class="carousel-viewport" id="carViewport">
+      <div class="carousel-track" id="carTrack">
+        <!-- cards injected by JS from SERVICES data, duplicated for seamless loop -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICE DETAIL MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-panel">
+      <div class="modal-top">
+        <button class="modal-close" id="modalClose" data-sound="ui" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="modal-num" id="modalNum">01</div>
+        <h3 id="modalTitle"></h3>
+        <p id="modalDesc"></p>
+      </div>
+      <div class="modal-body">
+        <div class="modal-block">
+          <div class="modal-block-label" data-i18n="modal.problemLabel">El problema que resuelve</div>
+          <p id="modalProblem"></p>
+        </div>
+        <div class="modal-block">
+          <div class="modal-block-label" data-i18n="modal.includesLabel">Qué incluye</div>
+          <ul class="modal-includes" id="modalIncludes"></ul>
+        </div>
+        <div class="modal-block">
+          <div class="modal-block-label" data-i18n="modal.idealLabel">Ideal para</div>
+          <p id="modalIdeal"></p>
+        </div>
+        <a href="#cta" class="modal-cta" id="modalCta" data-sound="confirm" data-i18n="modal.cta">Solicitar diagnóstico →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow" data-i18n="services.eyebrow">Capacidades</div>
+      <h2 class="sec-title" data-i18n="services.title">Ocho disciplinas <em>integradas.</em></h2>
+      <p class="sec-sub" data-i18n="services.sub">No tercerizamos lo crítico. Cada área se conecta con las demás para construir sistemas completos, no piezas sueltas.</p>
+    </div>
+
+    <div class="svc-list" id="svcList">
+      <!-- rows injected by JS from SERVICES data -->
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="process">
+    <div class="sec-head reveal">
+      <div class="sec-eyebrow" data-i18n="process.eyebrow">Metodología</div>
+      <h2 class="sec-title" data-i18n="process.title">De diagnóstico a <em>despliegue.</em></h2>
+      <p class="sec-sub" data-i18n="process.sub">Un proceso transparente, con entregables reales desde la primera semana.</p>
+    </div>
+    <div class="process-grid reveal">
+      <div class="proc-cell">
+        <div class="proc-num">I</div>
+        <div class="proc-title" data-i18n="process.s1Title">Diagnóstico</div>
+        <div class="proc-desc" data-i18n="process.s1Desc">Mapeamos tu operación y detectamos el mayor punto de impacto.</div>
+      </div>
+      <div class="proc-cell">
+        <div class="proc-num">II</div>
+        <div class="proc-title" data-i18n="process.s2Title">Arquitectura</div>
+        <div class="proc-desc" data-i18n="process.s2Desc">Diseñamos la solución técnica: alcance, stack y plazos definidos.</div>
+      </div>
+      <div class="proc-cell">
+        <div class="proc-num">III</div>
+        <div class="proc-title" data-i18n="process.s3Title">Desarrollo</div>
+        <div class="proc-desc" data-i18n="process.s3Desc">Sprints iterativos con entregables visibles desde la semana uno.</div>
+      </div>
+      <div class="proc-cell">
+        <div class="proc-num">IV</div>
+        <div class="proc-title" data-i18n="process.s4Title">Despliegue</div>
+        <div class="proc-desc" data-i18n="process.s4Desc">Implementación en tu entorno con capacitación incluida.</div>
+      </div>
+      <div class="proc-cell">
+        <div class="proc-num">V</div>
+        <div class="proc-title" data-i18n="process.s5Title">Evolución</div>
+        <div class="proc-desc" data-i18n="process.s5Desc">Soporte continuo y mejoras basadas en uso real.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section id="stats">
+    <div class="stats-grid">
+      <div class="stat-block reveal">
+        <div class="stat-num"><em>8</em></div>
+        <div class="stat-label" data-i18n="stats.s1">Disciplinas integradas</div>
+      </div>
+      <div class="stat-block reveal">
+        <div class="stat-num">48<em>h</em></div>
+        <div class="stat-label" data-i18n="stats.s2">Primer entregable</div>
+      </div>
+      <div class="stat-block reveal">
+        <div class="stat-num">100<em>%</em></div>
+        <div class="stat-label" data-i18n="stats.s3">Soluciones a medida</div>
+      </div>
+      <div class="stat-block reveal">
+        <div class="stat-num">0<em>$</em></div>
+        <div class="stat-label" data-i18n="stats.s4">Diagnóstico inicial</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPEN SECTION -->
+  <section id="open">
+    <div class="open-inner">
+      <div class="sec-eyebrow reveal" data-i18n="open.eyebrow">¿No sabes por dónde empezar?</div>
+      <h2 class="sec-title reveal" data-i18n="open.title">Hábl<em>anos,</em> sin formato.</h2>
+      <p class="open-quote reveal" data-i18n="open.quote">No necesitas tener claro el problema ni saber qué servicio buscas. Cuéntanos lo que está pasando en tus palabras — <em>nosotros lo ordenamos</em> y te decimos por dónde atacarlo.</p>
+
+      <form class="open-form reveal" id="openForm">
+        <textarea class="open-textarea" id="open-msg" required data-i18n-ph="open.msgPh" placeholder="Escribe como si nos lo estuvieras contando en persona: qué te frustra, qué has intentado, qué te gustaría que pasara..."></textarea>
+        <div class="open-foot">
+          <input class="open-foot-input" id="open-contact" type="text" required data-i18n-ph="open.contactPh" placeholder="Tu email o WhatsApp para responderte">
+          <button type="submit" class="cf-submit" data-sound="confirm" data-i18n="open.submit">Enviar mensaje →</button>
+        </div>
+      </form>
+
+      <div class="open-success" id="openSuccess">
+        <div class="cf-success-mark" data-i18n="open.successTitle">Recibido.</div>
+        <p data-i18n="open.successBody">Leeremos con calma lo que nos compartiste y te contactaremos para ayudarte a aclarar el siguiente paso.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta">
+    <div class="cta-inner">
+      <div class="sec-eyebrow reveal" data-i18n="cta.eyebrow">¿Empezamos?</div>
+      <h2 class="cta-title reveal" data-i18n="cta.title">Su operación merece <em>infraestructura a la altura.</em></h2>
+      <p class="cta-sub reveal" data-i18n="cta.sub">Diagnóstico gratuito de 40 minutos. Sin compromiso — solo claridad sobre qué necesita su operación.</p>
+
+      <form class="contact-form reveal" id="contactForm">
+        <div class="cf-row">
+          <div class="cf-group">
+            <label class="cf-label" data-i18n="form.name">Nombre</label>
+            <input class="cf-input" id="cf-name" type="text" required data-i18n-ph="form.namePh" placeholder="Tu nombre">
+          </div>
+          <div class="cf-group">
+            <label class="cf-label" data-i18n="form.company">Empresa</label>
+            <input class="cf-input" id="cf-company" type="text" data-i18n-ph="form.companyPh" placeholder="Nombre de tu negocio">
+          </div>
+        </div>
+        <div class="cf-row">
+          <div class="cf-group">
+            <label class="cf-label" data-i18n="form.email">Email</label>
+            <input class="cf-input" id="cf-email" type="email" required data-i18n-ph="form.emailPh" placeholder="correo@empresa.com">
+          </div>
+          <div class="cf-group">
+            <label class="cf-label" data-i18n="form.phone">Teléfono / WhatsApp</label>
+            <input class="cf-input" id="cf-phone" type="tel" data-i18n-ph="form.phonePh" placeholder="+502 0000 0000">
+          </div>
+        </div>
+
+        <div class="cf-group">
+          <label class="cf-label" data-i18n="form.areaLabel">¿Qué área te interesa? (elige todas las que apliquen)</label>
+          <div class="cf-check-grid" id="cfAreaGrid"></div>
+        </div>
+
+        <div class="cf-group">
+          <label class="cf-label" data-i18n="form.problemLabel">Cuéntanos qué está pasando en tu operación</label>
+          <textarea class="cf-textarea" id="cf-problem" required data-i18n-ph="form.problemPh" placeholder="Describe la situación: qué proceso te quita tiempo, qué te gustaría lograr, qué has intentado..."></textarea>
+        </div>
+
+        <div class="cf-row">
+          <div class="cf-group">
+            <label class="cf-label" data-i18n="form.budgetLabel">Presupuesto aproximado</label>
+            <select class="cf-select" id="cf-budget">
+              <option value="" data-i18n="form.budgetOpt0">Selecciona un rango</option>
+              <option data-i18n="form.budgetOpt1">$500 – $2,000</option>
+              <option data-i18n="form.budgetOpt2">$2,000 – $8,000</option>
+              <option data-i18n="form.budgetOpt3">$8,000 – $20,000</option>
+              <option data-i18n="form.budgetOpt4">$20,000+</option>
+              <option data-i18n="form.budgetOpt5">No estoy seguro</option>
+            </select>
+          </div>
+          <div class="cf-group">
+            <label class="cf-label" data-i18n="form.timelineLabel">¿Cuándo lo necesitas?</label>
+            <select class="cf-select" id="cf-timeline">
+              <option value="" data-i18n="form.timelineOpt0">Selecciona un plazo</option>
+              <option data-i18n="form.timelineOpt1">Lo antes posible</option>
+              <option data-i18n="form.timelineOpt2">1 a 3 meses</option>
+              <option data-i18n="form.timelineOpt3">3 a 6 meses</option>
+              <option data-i18n="form.timelineOpt4">Solo estoy explorando</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="cf-submit" data-sound="confirm" data-i18n="form.submit">Enviar solicitud →</button>
+        <p class="cf-hint" data-i18n="form.hint">Te contactaremos en menos de 24 horas con un primer diagnóstico de tu situación.</p>
+      </form>
+
+      <div class="cf-success" id="cfSuccess">
+        <div class="cf-success-mark" data-i18n="form.successTitle">Solicitud recibida.</div>
+        <p data-i18n="form.successBody">Gracias por el detalle — revisaremos tu caso y te contactaremos en menos de 24 horas para conversar sobre cómo abordarlo.</p>
+      </div>
+
+      <div class="cf-direct reveal">
+        <a href="mailto:hola@nexova.gt" data-sound="ui">hola@nexova.gt</a>
+        <a href="https://wa.me/50212345678" data-sound="ui" data-i18n="form.directWhatsapp">WhatsApp directo</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">NEX<em>OVA</em></div>
+    <p data-i18n="footer.copy">© 2026 NEXOVA GT — Ingeniería digital para negocios reales.</p>
+    <div class="footer-links">
+      <a href="#services" data-i18n="nav.services">Servicios</a>
+      <a href="#process" data-i18n="nav.process">Metodología</a>
+      <a href="#cta" data-i18n="nav.contact">Contacto</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   AUDIO ENGINE — minimal, low-register, procedural
+   ============================================================ */
+let audioCtx = null;
+let soundEnabled = true;
+
+function initAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function playTone(freq, duration, type='sine', vol=0.045, startDelay=0, freqEnd=null){
+  if(!audioCtx || !soundEnabled) return;
+  const t0 = audioCtx.currentTime + startDelay;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  if(freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, t0 + duration);
+  gain.gain.setValueAtTime(0, t0);
+  gain.gain.linearRampToValueAtTime(vol, t0 + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(t0); osc.stop(t0 + duration + 0.05);
+}
+
+function playUIBlip(){
+  // low, single, restrained click — like a precision mechanism
+  playTone(340, 0.07, 'sine', 0.035, 0, 280);
+}
+function playConfirm(){
+  // two-note low resolve — grave, professional
+  playTone(220, 0.13, 'triangle', 0.04, 0);
+  playTone(330, 0.18, 'triangle', 0.04, 0.08);
+}
+function playDeepWhoosh(duration=1.6){
+  if(!audioCtx || !soundEnabled) return;
+  const bufferSize = audioCtx.sampleRate * duration;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++){ data[i] = (Math.random()*2-1) * Math.pow(1-i/bufferSize, 2.5); }
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(120, audioCtx.currentTime);
+  filter.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + duration*0.7);
+  filter.Q.value = 0.5;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+  noise.start();
+}
+
+document.addEventListener('click', (e)=>{
+  const el = e.target.closest('[data-sound]');
+  if(!el) return;
+  const kind = el.dataset.sound;
+  if(kind==='ui') playUIBlip();
+  if(kind==='confirm') playConfirm();
+});
+
+/* ============================================================
+   SOUND TOGGLE
+   ============================================================ */
+document.getElementById('sound-toggle').addEventListener('click', ()=>{
+  soundEnabled = !soundEnabled;
+  document.getElementById('soundIconOn').style.display = soundEnabled ? 'block':'none';
+  document.getElementById('soundIconOff').style.display = soundEnabled ? 'none':'block';
+});
+
+/* ============================================================
+   BLUEPRINT CANVAS — technical line convergence (entry)
+   ============================================================ */
+const bCanvas = document.getElementById('blueprint-canvas');
+const bCtx = bCanvas.getContext('2d');
+let bw, bh, lines = [];
+const LINE_COUNT = 64;
+
+function resizeBlueprint(){
+  bw = bCanvas.width = window.innerWidth * window.devicePixelRatio;
+  bh = bCanvas.height = window.innerHeight * window.devicePixelRatio;
+  bCanvas.style.width = window.innerWidth + 'px';
+  bCanvas.style.height = window.innerHeight + 'px';
+  bCtx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+}
+resizeBlueprint();
+window.addEventListener('resize', resizeBlueprint);
+
+function makeLine(){
+  const w = window.innerWidth, h = window.innerHeight;
+  const angle = Math.random()*Math.PI*2;
+  const dist = Math.random()*Math.max(w,h)*0.7 + 200;
+  return {
+    angle, dist,
+    progress: Math.random(),
+    speed: Math.random()*0.006 + 0.004,
+    len: Math.random()*60+20
+  };
+}
+for(let i=0;i<LINE_COUNT;i++) lines.push(makeLine());
+
+let blueprintActive = true;
+
+function drawBlueprint(){
+  if(!blueprintActive) return;
+  const w = window.innerWidth, h = window.innerHeight;
+
+  // clear fully, then redraw — avoids opacity stacking that washes out the lines
+  bCtx.clearRect(0,0,w,h);
+  bCtx.fillStyle = 'rgba(11,12,14,1)';
+  bCtx.fillRect(0,0,w,h);
+
+  const cx = w/2, cy = h/2;
+  for(let l of lines){
+    l.progress += l.speed;
+    if(l.progress > 1.3){ Object.assign(l, makeLine()); l.progress = 0; }
+    const d = l.dist * (1 - Math.min(l.progress,1));
+    const x = cx + Math.cos(l.angle)*d;
+    const y = cy + Math.sin(l.angle)*d;
+    const x2 = cx + Math.cos(l.angle)*(d - l.len);
+    const y2 = cy + Math.sin(l.angle)*(d - l.len);
+    const alpha = Math.max(0, 1 - l.progress) * 0.6;
+    bCtx.strokeStyle = `rgba(184,118,63,${alpha})`;
+    bCtx.lineWidth = 0.8;
+    bCtx.beginPath();
+    bCtx.moveTo(x,y); bCtx.lineTo(x2,y2);
+    bCtx.stroke();
+  }
+
+  // subtle center crosshair
+  bCtx.strokeStyle = 'rgba(237,237,232,0.1)';
+  bCtx.lineWidth = 0.6;
+  bCtx.beginPath();
+  bCtx.moveTo(cx-14,cy); bCtx.lineTo(cx+14,cy);
+  bCtx.moveTo(cx,cy-14); bCtx.lineTo(cx,cy+14);
+  bCtx.stroke();
+
+  requestAnimationFrame(drawBlueprint);
+}
+drawBlueprint();
+
+/* ============================================================
+   ENTRY SEQUENCE
+   ============================================================ */
+const enterBtn = document.getElementById('enterBtn');
+const entryOverlay = document.getElementById('entry-overlay');
+const entryUI = document.getElementById('entryUI');
+const entryProgress = document.getElementById('entryProgress');
+const eprogFill = document.getElementById('eprogFill');
+const mainNav = document.getElementById('mainNav');
+const mainContent = document.getElementById('main-content');
+
+enterBtn.addEventListener('click', ()=>{
+  initAudio();
+  playDeepWhoosh(1.8);
+  setTimeout(()=>playTone(180, 0.4, 'sine', 0.03, 0, 90), 100);
+
+  enterBtn.style.pointerEvents = 'none';
+  entryUI.querySelector('.entry-mark').style.opacity='0';
+  entryUI.querySelector('.entry-rule').style.opacity='0';
+  enterBtn.style.opacity='0';
+  enterBtn.style.transform='scale(0.9)';
+  enterBtn.style.transition='opacity .5s, transform .5s';
+  document.querySelector('.entry-caption').style.display='none';
+  entryProgress.classList.add('show');
+
+  let pct = 0;
+  const barInt = setInterval(()=>{
+    pct += Math.random()*16 + 9;
+    if(pct>=100){ pct=100; clearInterval(barInt); }
+    eprogFill.style.width = pct+'%';
+  }, 130);
+
+  setTimeout(()=>{
+    entryUI.classList.add('fade');
+  }, 1300);
+
+  setTimeout(()=>{
+    entryOverlay.classList.add('fading');
+  }, 1700);
+
+  setTimeout(()=>{
+    blueprintActive = false;
+    entryOverlay.classList.add('done');
+    mainNav.classList.add('show');
+    mainContent.classList.add('show');
+    revealOnScroll();
+  }, 2750);
+});
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+function revealOnScroll(){
+  const els = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach((e,i)=>{
+      if(e.isIntersecting){
+        setTimeout(()=>e.target.classList.add('in'), i*60);
+        obs.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.15, rootMargin:'0px 0px -60px 0px'});
+  els.forEach(el=>obs.observe(el));
+}
+
+/* ============================================================
+   HERO BACKGROUND — faint technical grid drift
+   ============================================================ */
+const heroCanvas = document.getElementById('hero-canvas');
+const hCtx = heroCanvas.getContext('2d');
+let hw, hh, nodes = [];
+function resizeHero(){
+  hw = heroCanvas.width = heroCanvas.offsetWidth;
+  hh = heroCanvas.height = heroCanvas.offsetHeight;
+}
+window.addEventListener('resize', resizeHero);
+setTimeout(resizeHero, 100);
+
+function makeNode(){
+  return {
+    x: Math.random()*hw, y: Math.random()*hh,
+    vx: (Math.random()-0.5)*0.12, vy: (Math.random()-0.5)*0.12,
+    r: Math.random()*1.2+0.3
+  };
+}
+for(let i=0;i<50;i++) nodes.push(makeNode());
+
+function drawHero(){
+  if(hw>0){
+    hCtx.clearRect(0,0,hw,hh);
+    for(let p of nodes){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>hw) p.vx*=-1;
+      if(p.y<0||p.y>hh) p.vy*=-1;
+      hCtx.beginPath();
+      hCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      hCtx.fillStyle = 'rgba(184,118,63,0.4)';
+      hCtx.fill();
+    }
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<130){
+          hCtx.strokeStyle = `rgba(237,237,232,${0.04*(1-d/130)})`;
+          hCtx.lineWidth=0.5;
+          hCtx.beginPath(); hCtx.moveTo(nodes[i].x,nodes[i].y); hCtx.lineTo(nodes[j].x,nodes[j].y); hCtx.stroke();
+        }
+      }
+    }
+  }
+  requestAnimationFrame(drawHero);
+}
+requestAnimationFrame(drawHero);
+/* ============================================================
+   I18N — general UI strings
+   ============================================================ */
+const I18N = {
+  es: {
+    'entry.enter': 'Ingresar',
+    'entry.caption': 'INGENIERÍA DIGITAL — ACCESO AL SISTEMA',
+    'entry.loading': 'INICIALIZANDO',
+    'nav.services': 'Servicios',
+    'nav.process': 'Metodología',
+    'nav.contact': 'Contacto',
+    'nav.cta': 'Solicitar diagnóstico',
+    'hero.eyebrow': 'Ingeniería digital para operaciones serias',
+    'hero.title': 'Sistemas que sostienen<br>la operación de <em>tu empresa,</em><br>no solo su apariencia',
+    'hero.sub': 'Desarrollamos software, datos e infraestructura con el mismo estándar de precisión que exige tu negocio — sin atajos, sin plantillas.',
+    'hero.ctaPrimary': 'Solicitar diagnóstico →',
+    'hero.ctaGhost': 'Ver capacidades',
+    'hero.est': 'EST. 2026',
+    'carousel.cta': 'Ver detalle →',
+    'modal.problemLabel': 'El problema que resuelve',
+    'modal.includesLabel': 'Qué incluye',
+    'modal.idealLabel': 'Ideal para',
+    'modal.cta': 'Solicitar diagnóstico →',
+    'services.eyebrow': 'Capacidades',
+    'services.title': 'Ocho disciplinas <em>integradas.</em>',
+    'services.sub': 'No tercerizamos lo crítico. Cada área se conecta con las demás para construir sistemas completos, no piezas sueltas.',
+    'process.eyebrow': 'Metodología',
+    'process.title': 'De diagnóstico a <em>despliegue.</em>',
+    'process.sub': 'Un proceso transparente, con entregables reales desde la primera semana.',
+    'process.s1Title': 'Diagnóstico', 'process.s1Desc': 'Mapeamos tu operación y detectamos el mayor punto de impacto.',
+    'process.s2Title': 'Arquitectura', 'process.s2Desc': 'Diseñamos la solución técnica: alcance, stack y plazos definidos.',
+    'process.s3Title': 'Desarrollo', 'process.s3Desc': 'Sprints iterativos con entregables visibles desde la semana uno.',
+    'process.s4Title': 'Despliegue', 'process.s4Desc': 'Implementación en tu entorno con capacitación incluida.',
+    'process.s5Title': 'Evolución', 'process.s5Desc': 'Soporte continuo y mejoras basadas en uso real.',
+    'stats.s1': 'Disciplinas integradas',
+    'stats.s2': 'Primer entregable',
+    'stats.s3': 'Soluciones a medida',
+    'stats.s4': 'Diagnóstico inicial',
+    'cta.eyebrow': '¿Empezamos?',
+    'cta.title': 'Su operación merece <em>infraestructura a la altura.</em>',
+    'cta.sub': 'Diagnóstico gratuito de 40 minutos. Sin compromiso — solo claridad sobre qué necesita su operación.',
+    'form.name': 'Nombre',
+    'form.namePh': 'Tu nombre',
+    'form.company': 'Empresa',
+    'form.companyPh': 'Nombre de tu negocio',
+    'form.email': 'Email',
+    'form.emailPh': 'correo@empresa.com',
+    'form.phone': 'Teléfono / WhatsApp',
+    'form.phonePh': '+502 0000 0000',
+    'form.areaLabel': '¿Qué área te interesa? (elige todas las que apliquen)',
+    'form.problemLabel': 'Cuéntanos qué está pasando en tu operación',
+    'form.problemPh': 'Describe la situación: qué proceso te quita tiempo, qué te gustaría lograr, qué has intentado...',
+    'form.budgetLabel': 'Presupuesto aproximado',
+    'form.budgetOpt0': 'Selecciona un rango',
+    'form.budgetOpt1': '$500 – $2,000',
+    'form.budgetOpt2': '$2,000 – $8,000',
+    'form.budgetOpt3': '$8,000 – $20,000',
+    'form.budgetOpt4': '$20,000+',
+    'form.budgetOpt5': 'No estoy seguro',
+    'form.timelineLabel': '¿Cuándo lo necesitas?',
+    'form.timelineOpt0': 'Selecciona un plazo',
+    'form.timelineOpt1': 'Lo antes posible',
+    'form.timelineOpt2': '1 a 3 meses',
+    'form.timelineOpt3': '3 a 6 meses',
+    'form.timelineOpt4': 'Solo estoy explorando',
+    'form.submit': 'Enviar solicitud →',
+    'form.hint': 'Te contactaremos en menos de 24 horas con un primer diagnóstico de tu situación.',
+    'form.successTitle': 'Solicitud recibida.',
+    'form.successBody': 'Gracias por el detalle — revisaremos tu caso y te contactaremos en menos de 24 horas para conversar sobre cómo abordarlo.',
+    'form.directWhatsapp': 'WhatsApp directo',
+    'open.eyebrow': '¿No sabes por dónde empezar?',
+    'open.title': 'Hábl<em>anos,</em> sin formato.',
+    'open.quote': 'No necesitas tener claro el problema ni saber qué servicio buscas. Cuéntanos lo que está pasando en tus palabras — <em>nosotros lo ordenamos</em> y te decimos por dónde atacarlo.',
+    'open.msgPh': 'Escribe como si nos lo estuvieras contando en persona: qué te frustra, qué has intentado, qué te gustaría que pasara...',
+    'open.contactPh': 'Tu email o WhatsApp para responderte',
+    'open.submit': 'Enviar mensaje →',
+    'open.successTitle': 'Recibido.',
+    'open.successBody': 'Leeremos con calma lo que nos compartiste y te contactaremos para ayudarte a aclarar el siguiente paso.',
+    'footer.copy': '© 2026 NEXOVA GT — Ingeniería digital para negocios reales.'
+  },
+  en: {
+    'entry.enter': 'Enter',
+    'entry.caption': 'DIGITAL ENGINEERING — SYSTEM ACCESS',
+    'entry.loading': 'INITIALIZING',
+    'nav.services': 'Services',
+    'nav.process': 'Methodology',
+    'nav.contact': 'Contact',
+    'nav.cta': 'Request a diagnostic',
+    'hero.eyebrow': 'Digital engineering for serious operations',
+    'hero.title': 'Systems that sustain<br>your company\'s <em>operation,</em><br>not just its appearance',
+    'hero.sub': 'We build software, data, and infrastructure to the same standard of precision your business demands — no shortcuts, no templates.',
+    'hero.ctaPrimary': 'Request a diagnostic →',
+    'hero.ctaGhost': 'View capabilities',
+    'hero.est': 'EST. 2026',
+    'carousel.cta': 'View detail →',
+    'modal.problemLabel': 'The problem it solves',
+    'modal.includesLabel': 'What\'s included',
+    'modal.idealLabel': 'Ideal for',
+    'modal.cta': 'Request a diagnostic →',
+    'services.eyebrow': 'Capabilities',
+    'services.title': 'Eight integrated <em>disciplines.</em>',
+    'services.sub': 'We don\'t outsource what\'s critical. Each area connects with the rest to build complete systems, not loose pieces.',
+    'process.eyebrow': 'Methodology',
+    'process.title': 'From diagnostic to <em>deployment.</em>',
+    'process.sub': 'A transparent process, with real deliverables from week one.',
+    'process.s1Title': 'Diagnostic', 'process.s1Desc': 'We map your operation and identify the point of greatest impact.',
+    'process.s2Title': 'Architecture', 'process.s2Desc': 'We design the technical solution: scope, stack, and defined timelines.',
+    'process.s3Title': 'Development', 'process.s3Desc': 'Iterative sprints with visible deliverables from week one.',
+    'process.s4Title': 'Deployment', 'process.s4Desc': 'Implementation in your environment, with training included.',
+    'process.s5Title': 'Evolution', 'process.s5Desc': 'Ongoing support and improvements based on real usage.',
+    'stats.s1': 'Integrated disciplines',
+    'stats.s2': 'First deliverable',
+    'stats.s3': 'Custom-built solutions',
+    'stats.s4': 'Initial diagnostic',
+    'cta.eyebrow': 'Shall we start?',
+    'cta.title': 'Your operation deserves <em>infrastructure to match.</em>',
+    'cta.sub': 'Free 40-minute diagnostic. No commitment — just clarity on what your operation needs.',
+    'form.name': 'Name',
+    'form.namePh': 'Your name',
+    'form.company': 'Company',
+    'form.companyPh': 'Your business name',
+    'form.email': 'Email',
+    'form.emailPh': 'you@company.com',
+    'form.phone': 'Phone / WhatsApp',
+    'form.phonePh': '+1 000 000 0000',
+    'form.areaLabel': 'Which area interests you? (choose all that apply)',
+    'form.problemLabel': 'Tell us what\'s happening in your operation',
+    'form.problemPh': 'Describe the situation: what process is costing you time, what you\'d like to achieve, what you\'ve already tried...',
+    'form.budgetLabel': 'Approximate budget',
+    'form.budgetOpt0': 'Select a range',
+    'form.budgetOpt1': '$500 – $2,000',
+    'form.budgetOpt2': '$2,000 – $8,000',
+    'form.budgetOpt3': '$8,000 – $20,000',
+    'form.budgetOpt4': '$20,000+',
+    'form.budgetOpt5': 'Not sure',
+    'form.timelineLabel': 'When do you need it?',
+    'form.timelineOpt0': 'Select a timeline',
+    'form.timelineOpt1': 'As soon as possible',
+    'form.timelineOpt2': '1 to 3 months',
+    'form.timelineOpt3': '3 to 6 months',
+    'form.timelineOpt4': 'Just exploring options',
+    'form.submit': 'Send request →',
+    'form.hint': 'We\'ll get back to you in less than 24 hours with an initial diagnostic of your situation.',
+    'form.successTitle': 'Request received.',
+    'form.successBody': 'Thanks for the detail — we\'ll review your case and reach out in less than 24 hours to talk through how to approach it.',
+    'form.directWhatsapp': 'Direct WhatsApp',
+    'open.eyebrow': 'Not sure where to start?',
+    'open.title': 'Talk t<em>o us,</em> no format needed.',
+    'open.quote': 'You don\'t need to have the problem figured out or know which service you need. Tell us what\'s going on in your own words — <em>we\'ll sort it out</em> and tell you where to start.',
+    'open.msgPh': 'Write it like you\'re telling us in person: what\'s frustrating you, what you\'ve already tried, what you\'d like to happen...',
+    'open.contactPh': 'Your email or WhatsApp so we can reply',
+    'open.submit': 'Send message →',
+    'open.successTitle': 'Got it.',
+    'open.successBody': 'We\'ll take time to read what you shared and reach out to help you figure out the next step.',
+    'footer.copy': '© 2026 NEXOVA GT — Digital engineering for real businesses.'
+  }
+};
+
+let currentLang = 'es';
+
+function applyLanguage(lang){
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.dataset.i18n;
+    const val = I18N[lang][key];
+    if(val !== undefined) el.innerHTML = val;
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const key = el.dataset.i18nPh;
+    const val = I18N[lang][key];
+    if(val !== undefined) el.placeholder = val;
+  });
+  document.getElementById('langEs').classList.toggle('active', lang==='es');
+  document.getElementById('langEn').classList.toggle('active', lang==='en');
+  document.getElementById('navLangEs').classList.toggle('active', lang==='es');
+  document.getElementById('navLangEn').classList.toggle('active', lang==='en');
+  renderCards();
+  renderServiceRows();
+  renderAreaGrid();
+}
+
+document.getElementById('langEs').addEventListener('click', ()=>{ initAudio(); playUIBlip(); applyLanguage('es'); });
+document.getElementById('langEn').addEventListener('click', ()=>{ initAudio(); playUIBlip(); applyLanguage('en'); });
+document.getElementById('navLangEs').addEventListener('click', ()=>{ initAudio(); playUIBlip(); applyLanguage('es'); });
+document.getElementById('navLangEn').addEventListener('click', ()=>{ initAudio(); playUIBlip(); applyLanguage('en'); });
+
+/* ============================================================
+   SERVICE DATA — bilingual, used by carousel + editorial list + modal
+   ============================================================ */
+const SERVICES = [
+  {
+    num: '01',
+    es: { title: 'Desarrollo de Software', desc: 'Sistemas a medida que se adaptan a tu operación.',
+      problem: 'Tu negocio usa Excel, WhatsApp y dos o tres sistemas que no se hablan entre sí. Cada proceso requiere copiar datos manualmente de un lado a otro, y los errores humanos cuestan tiempo y dinero.',
+      includes: ['Sistema a medida diseñado para tu operación específica', 'Integración con tus herramientas actuales', 'Capacitación completa para tu equipo', 'Soporte técnico post-lanzamiento'],
+      ideal: 'Negocios con procesos repetitivos que ya superaron lo que Excel o herramientas genéricas pueden ofrecer.', tags: ['ERP','CRM','APIs'] },
+    en: { title: 'Software Development', desc: 'Custom systems built around your operation.',
+      problem: 'Your business runs on Excel, WhatsApp, and two or three systems that don\'t talk to each other. Every process means copying data back and forth manually, and human error costs time and money.',
+      includes: ['Custom system designed for your specific operation', 'Integration with your current tools', 'Full training for your team', 'Post-launch technical support'],
+      ideal: 'Businesses with repetitive processes that have already outgrown Excel or generic tools.', tags: ['ERP','CRM','APIs'] }
+  },
+  {
+    num: '02',
+    es: { title: 'Plataformas Web', desc: 'Sitios rápidos y escalables que convierten visitantes en clientes.',
+      problem: 'Tu sitio actual es lento, no genera clientes, o simplemente no existe — y cada día sin presencia digital sólida es una oportunidad que se va con la competencia.',
+      includes: ['Diseño a medida, no plantillas genéricas', 'Optimización para buscadores (SEO)', 'Integración con WhatsApp, CRM o tienda en línea', 'Hosting y dominio configurados'],
+      ideal: 'Negocios que necesitan presencia digital profesional o quieren renovar un sitio que ya no representa su nivel.', tags: ['E-commerce','SEO'] },
+    en: { title: 'Web Platforms', desc: 'Fast, scalable sites that turn visitors into customers.',
+      problem: 'Your current site is slow, generates no leads, or simply doesn\'t exist — and every day without a solid digital presence is an opportunity going to a competitor.',
+      includes: ['Custom design, not generic templates', 'Search engine optimization (SEO)', 'Integration with WhatsApp, CRM, or online store', 'Hosting and domain fully configured'],
+      ideal: 'Businesses that need a professional digital presence or want to replace a site that no longer matches their level.', tags: ['E-commerce','SEO'] }
+  },
+  {
+    num: '03',
+    es: { title: 'Apps Móviles', desc: 'Aplicaciones nativas e híbridas para iOS y Android.',
+      problem: 'Tus clientes viven en su teléfono, pero tu negocio solo existe en mostrador o en una web de escritorio — perdiendo la oportunidad de fidelizarlos donde pasan más tiempo.',
+      includes: ['App nativa o híbrida según tu presupuesto', 'Diseño de experiencia de usuario (UX)', 'Publicación en App Store y Google Play', 'Mantenimiento y actualizaciones'],
+      ideal: 'Negocios con clientes recurrentes que se beneficiarían de pedidos, reservas o fidelización desde el móvil.', tags: ['iOS','Android'] },
+    en: { title: 'Mobile Apps', desc: 'Native and hybrid applications for iOS and Android.',
+      problem: 'Your customers live on their phones, but your business only exists at the counter or on a desktop website — missing the chance to build loyalty where they spend the most time.',
+      includes: ['Native or hybrid app depending on your budget', 'User experience (UX) design', 'Publishing on the App Store and Google Play', 'Maintenance and updates'],
+      ideal: 'Businesses with repeat customers who would benefit from mobile orders, bookings, or loyalty programs.', tags: ['iOS','Android'] }
+  },
+  {
+    num: '04',
+    es: { title: 'Análisis de Datos', desc: 'Dashboards en tiempo real que convierten datos en decisiones.',
+      problem: 'Tienes datos de ventas, inventario y clientes — pero están dispersos en archivos distintos, y tomar una decisión informada te cuesta horas de armar reportes manuales.',
+      includes: ['Dashboard centralizado y en tiempo real', 'Conexión con tus fuentes de datos actuales', 'Reportes automáticos programados', 'Capacitación para interpretar y usar los datos'],
+      ideal: 'Dueños y gerentes que toman decisiones importantes sin tener la información clara a la mano.', tags: ['BI','SQL','Predictivo'] },
+    en: { title: 'Data Analysis', desc: 'Real-time dashboards that turn data into decisions.',
+      problem: 'You have sales, inventory, and customer data — but it\'s scattered across different files, and making an informed decision costs you hours of building manual reports.',
+      includes: ['Centralized, real-time dashboard', 'Connection to your current data sources', 'Scheduled automatic reports', 'Training to interpret and use the data'],
+      ideal: 'Owners and managers making important decisions without clear information on hand.', tags: ['BI','SQL','Predictive'] }
+  },
+  {
+    num: '05',
+    es: { title: 'Marketing Digital', desc: 'Estrategias de adquisición basadas en datos reales.',
+      problem: 'Inviertes en publicidad sin saber realmente qué funciona, o no inviertes porque no sabes por dónde empezar — y mientras tanto la competencia capta a tus clientes potenciales.',
+      includes: ['Estrategia de campañas en Meta y Google Ads', 'Definición de audiencia y segmentación', 'Reportes de resultados y retorno de inversión', 'Optimización continua basada en datos'],
+      ideal: 'Negocios listos para invertir en publicidad con un caso de éxito o producto ya validado.', tags: ['Ads','Analytics'] },
+    en: { title: 'Digital Marketing', desc: 'Acquisition strategies based on real data.',
+      problem: 'You spend on advertising without really knowing what works, or you don\'t invest because you don\'t know where to start — meanwhile competitors capture your potential customers.',
+      includes: ['Campaign strategy on Meta and Google Ads', 'Audience definition and segmentation', 'Performance and ROI reporting', 'Continuous data-driven optimization'],
+      ideal: 'Businesses ready to invest in advertising with a proven case or validated product.', tags: ['Ads','Analytics'] }
+  },
+  {
+    num: '06',
+    es: { title: 'Cloud & Infraestructura', desc: 'Arquitectura escalable que crece con tu negocio.',
+      problem: 'Tu sistema se cae en los momentos de más ventas, o sientes que en cualquier momento "algo va a tronar" porque todo corre sobre infraestructura improvisada.',
+      includes: ['Migración a infraestructura en la nube', 'Configuración de respaldos automáticos', 'Monitoreo y alertas de funcionamiento', 'Arquitectura preparada para crecer'],
+      ideal: 'Negocios cuyo sistema actual ya no soporta el volumen de operación o que necesitan mayor estabilidad.', tags: ['AWS','DevOps'] },
+    en: { title: 'Cloud & Infrastructure', desc: 'Scalable architecture that grows with your business.',
+      problem: 'Your system crashes during your busiest sales moments, or you feel like "something is about to break" because everything runs on improvised infrastructure.',
+      includes: ['Migration to cloud infrastructure', 'Automated backup configuration', 'Monitoring and uptime alerts', 'Architecture built to scale'],
+      ideal: 'Businesses whose current system can no longer handle their operating volume or need greater stability.', tags: ['AWS','DevOps'] }
+  },
+  {
+    num: '07',
+    es: { title: 'Automatización & IA', desc: 'Flujos inteligentes que eliminan trabajo manual repetitivo.',
+      problem: 'Alguien en tu equipo dedica horas cada semana a tareas repetitivas — capturar datos, enviar mensajes, generar reportes — que un sistema podría hacer solo.',
+      includes: ['Automatización de flujos con herramientas como n8n o Make', 'Bots de WhatsApp, email o Telegram', 'Procesamiento automático de documentos', 'IA aplicada a clasificación o predicción'],
+      ideal: 'Negocios donde el equipo pierde tiempo valioso en tareas que no requieren criterio humano.', tags: ['RPA','IA'] },
+    en: { title: 'Automation & AI', desc: 'Intelligent workflows that eliminate repetitive manual work.',
+      problem: 'Someone on your team spends hours every week on repetitive tasks — entering data, sending messages, generating reports — that a system could handle on its own.',
+      includes: ['Workflow automation with tools like n8n or Make', 'WhatsApp, email, or Telegram bots', 'Automatic document processing', 'AI applied to classification or prediction'],
+      ideal: 'Businesses where the team loses valuable time on tasks that don\'t require human judgment.', tags: ['RPA','AI'] }
+  },
+  {
+    num: '08',
+    es: { title: 'Mejoras a Excel & Hojas de Cálculo', desc: 'Optimizamos lo que ya usas todos los días.',
+      problem: 'Tu Excel funciona, pero es lento, propenso a errores, y depende de que una sola persona sepa usarlo — si esa persona falta, el proceso se detiene.',
+      includes: ['Plantillas inteligentes con fórmulas avanzadas', 'Dashboards dentro de Excel o Google Sheets', 'Automatización con macros o Apps Script', 'Documentación para que cualquiera lo use'],
+      ideal: 'Negocios que aún no necesitan un sistema completo, pero quieren que su Excel deje de ser un riesgo operativo.', tags: ['Excel','Sheets','Macros'] },
+    en: { title: 'Excel & Spreadsheet Improvements', desc: 'We optimize what you already use every day.',
+      problem: 'Your spreadsheet works, but it\'s slow, error-prone, and depends on one person knowing how to use it — if that person is out, the process stops.',
+      includes: ['Smart templates with advanced formulas', 'Dashboards inside Excel or Google Sheets', 'Automation with macros or Apps Script', 'Documentation so anyone can use it'],
+      ideal: 'Businesses that don\'t need a full system yet, but want their spreadsheet to stop being an operational risk.', tags: ['Excel','Sheets','Macros'] }
+  }
+];
+
+/* ============================================================
+   CAROUSEL — auto-scrolling marquee, draggable, clickable, looping
+   ============================================================ */
+const carTrack = document.getElementById('carTrack');
+const carViewport = document.getElementById('carViewport');
+
+// render cards twice in a row for seamless infinite loop
+function renderCards(){
+  let html = '';
+  SERVICES.forEach((s, i)=>{
+    const t = s[currentLang];
+    html += `
+      <div class="car-card" data-index="${i}">
+        <div class="car-card-num">${s.num}</div>
+        <h4>${t.title}</h4>
+        <p>${t.desc}</p>
+        <div class="car-card-cta">${I18N[currentLang]['carousel.cta']}</div>
+      </div>`;
+  });
+  carTrack.innerHTML = html + html; // duplicate set for loop
+  measureSetWidth();
+}
+
+/* ============================================================
+   EDITORIAL SERVICES LIST
+   ============================================================ */
+const svcList = document.getElementById('svcList');
+function renderServiceRows(){
+  let html = '';
+  SERVICES.forEach((s, i)=>{
+    const t = s[currentLang];
+    html += `
+      <div class="svc-row reveal in">
+        <div class="svc-num">${s.num}</div>
+        <div class="svc-main">
+          <h3>${t.title}</h3>
+          <p>${t.desc}</p>
+        </div>
+        <div class="svc-tags">${t.tags.map(tag=>`<span class="svc-tag">${tag}</span>`).join('')}</div>
+      </div>`;
+  });
+  svcList.innerHTML = html;
+}
+
+let carPos = 0;
+let autoSpeed = 0.45; // px per frame, continuous drift like the old marquee
+let isDragging = false;
+let dragStartX = 0;
+let dragStartPos = 0;
+let hasDragged = false;
+let isPaused = false;
+let setWidth = 0;
+
+function measureSetWidth(){
+  // width of ONE full set of cards (half the track, since we duplicated)
+  setWidth = carTrack.scrollWidth / 2;
+}
+window.addEventListener('resize', measureSetWidth);
+
+function applyCarTransform(animate){
+  carTrack.style.transition = animate ? 'none' : 'none';
+  carTrack.style.transform = `translateX(${-carPos}px)`;
+}
+
+function tick(){
+  if(!isDragging && !isPaused){
+    carPos += autoSpeed;
+  }
+  // seamless wrap
+  if(setWidth > 0){
+    if(carPos >= setWidth) carPos -= setWidth;
+    if(carPos < 0) carPos += setWidth;
+  }
+  applyCarTransform(false);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+// pause drift on hover (desktop), resume on leave
+carViewport.addEventListener('mouseenter', ()=>{ isPaused = true; });
+carViewport.addEventListener('mouseleave', ()=>{ isPaused = false; isDragging = false; carViewport.classList.remove('dragging'); });
+
+// mouse drag
+carViewport.addEventListener('mousedown', (e)=>{
+  isDragging = true; hasDragged = false;
+  dragStartX = e.clientX; dragStartPos = carPos;
+  carViewport.classList.add('dragging');
+});
+window.addEventListener('mousemove', (e)=>{
+  if(!isDragging) return;
+  const dx = e.clientX - dragStartX;
+  if(Math.abs(dx) > 5) hasDragged = true;
+  carPos = dragStartPos - dx;
+});
+window.addEventListener('mouseup', ()=>{
+  if(!isDragging) return;
+  isDragging = false;
+  carViewport.classList.remove('dragging');
+});
+
+// touch drag
+carViewport.addEventListener('touchstart', (e)=>{
+  isDragging = true; hasDragged = false; isPaused = true;
+  dragStartX = e.touches[0].clientX; dragStartPos = carPos;
+}, {passive:true});
+carViewport.addEventListener('touchmove', (e)=>{
+  if(!isDragging) return;
+  const dx = e.touches[0].clientX - dragStartX;
+  if(Math.abs(dx) > 5) hasDragged = true;
+  carPos = dragStartPos - dx;
+}, {passive:true});
+carViewport.addEventListener('touchend', ()=>{
+  isDragging = false; isPaused = false;
+});
+
+// click card → open modal (but not if it was a drag)
+carTrack.addEventListener('click', (e)=>{
+  if(hasDragged) return;
+  const card = e.target.closest('.car-card');
+  if(!card) return;
+  openModal(parseInt(card.dataset.index));
+});
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+const modalOverlay = document.getElementById('modalOverlay');
+const modalClose = document.getElementById('modalClose');
+
+function openModal(index){
+  const s = SERVICES[index];
+  const t = s[currentLang];
+  document.getElementById('modalNum').textContent = s.num;
+  document.getElementById('modalTitle').textContent = t.title;
+  document.getElementById('modalDesc').textContent = t.desc;
+  document.getElementById('modalProblem').textContent = t.problem;
+  document.getElementById('modalIdeal').textContent = t.ideal;
+  const includesList = document.getElementById('modalIncludes');
+  includesList.innerHTML = t.includes.map(i => `<li>${i}</li>`).join('');
+
+  modalOverlay.classList.add('open');
+  document.body.classList.add('modal-open');
+  initAudio();
+  playUIBlip();
+}
+function closeModal(){
+  modalOverlay.classList.remove('open');
+  document.body.classList.remove('modal-open');
+  playUIBlip();
+}
+modalClose.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e)=>{
+  if(e.target === modalOverlay) closeModal();
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape' && modalOverlay.classList.contains('open')) closeModal();
+});
+document.getElementById('modalCta').addEventListener('click', closeModal);
+
+/* ============================================================
+   CONTACT FORM
+   ============================================================ */
+const cfAreaGrid = document.getElementById('cfAreaGrid');
+const contactForm = document.getElementById('contactForm');
+const cfSuccess = document.getElementById('cfSuccess');
+let selectedAreas = [];
+
+function renderAreaGrid(){
+  selectedAreas = selectedAreas.filter(i => i < SERVICES.length);
+  cfAreaGrid.innerHTML = SERVICES.map((s,i)=>{
+    const t = s[currentLang];
+    const sel = selectedAreas.includes(i) ? 'selected' : '';
+    return `
+      <label class="cf-check ${sel}" data-index="${i}">
+        <input type="checkbox">
+        <div class="cf-check-box"><span class="cf-check-tick">✓</span></div>
+        <span class="cf-check-label">${t.title}</span>
+      </label>`;
+  }).join('');
+}
+
+cfAreaGrid.addEventListener('click', (e)=>{
+  const item = e.target.closest('.cf-check');
+  if(!item) return;
+  e.preventDefault();
+  const idx = parseInt(item.dataset.index);
+  if(selectedAreas.includes(idx)){
+    selectedAreas = selectedAreas.filter(i=>i!==idx);
+  }else{
+    selectedAreas.push(idx);
+  }
+  item.classList.toggle('selected');
+  initAudio(); playUIBlip();
+});
+
+contactForm.addEventListener('submit', (e)=>{
+  e.preventDefault();
+
+  const name = document.getElementById('cf-name').value.trim();
+  const company = document.getElementById('cf-company').value.trim();
+  const email = document.getElementById('cf-email').value.trim();
+  const phone = document.getElementById('cf-phone').value.trim();
+  const problem = document.getElementById('cf-problem').value.trim();
+  const budget = document.getElementById('cf-budget').value;
+  const timeline = document.getElementById('cf-timeline').value;
+  const areas = selectedAreas.map(i => SERVICES[i][currentLang].title).join(', ') || '—';
+
+  const subject = `Solicitud de diagnóstico — ${name}${company ? ' / ' + company : ''}`;
+  const body =
+`Nombre: ${name}
+Empresa: ${company || '—'}
+Email: ${email}
+Teléfono: ${phone || '—'}
+
+Área de interés: ${areas}
+
+Descripción del problema:
+${problem}
+
+Presupuesto: ${budget || '—'}
+Plazo: ${timeline || '—'}`;
+
+  window.location.href = `mailto:hola@nexova.gt?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+  initAudio();
+  playConfirm();
+  contactForm.style.display = 'none';
+  cfSuccess.classList.add('show');
+});
+
+/* ============================================================
+   OPEN MESSAGE FORM
+   ============================================================ */
+const openForm = document.getElementById('openForm');
+const openSuccess = document.getElementById('openSuccess');
+
+openForm.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const msg = document.getElementById('open-msg').value.trim();
+  const contact = document.getElementById('open-contact').value.trim();
+
+  const subject = 'Mensaje abierto — Nexova';
+  const body =
+`Contacto: ${contact}
+
+Mensaje:
+${msg}`;
+
+  window.location.href = `mailto:hola@nexova.gt?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+  initAudio();
+  playConfirm();
+  openForm.style.display = 'none';
+  openSuccess.classList.add('show');
+});
+
+/* ============================================================
+   INITIAL RENDER
+   ============================================================ */
+renderCards();
+renderServiceRows();
+renderAreaGrid();
+
+</script>
+</body>
+</html>
+
