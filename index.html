@@ -601,33 +601,25 @@ section{ padding:8rem 4rem; position:relative; }
   .cf-check-grid{ grid-template-columns:1fr; }
 }
 
-/* ── OPEN SECTION ── */
-#open{ background:var(--void); }
-.open-inner{ max-width:780px; }
+/* ── OPEN PANEL (inline "háblanos sin formato" reveal) ── */
+.open-panel{
+  border-left:2px solid var(--copper-dim); padding:1.6rem 0 .4rem 1.6rem;
+  margin:-.4rem 0 1.8rem;
+}
 .open-quote{
   font-family:'Fraunces',serif; font-style:italic; font-weight:400;
-  font-size:clamp(1.3rem,2.4vw,1.7rem); line-height:1.6; color:var(--bone);
-  margin-bottom:2.6rem; max-width:620px;
+  font-size:clamp(1.05rem,1.8vw,1.25rem); line-height:1.6; color:var(--bone);
+  margin-bottom:1.4rem; max-width:560px;
 }
 .open-quote em{ color:var(--copper); font-style:italic; }
-.open-form{ max-width:680px; }
 .open-textarea{
   width:100%; background:var(--panel); border:1px solid var(--line-strong);
-  color:var(--bone); font-family:'Inter',sans-serif; font-size:1rem; line-height:1.8;
-  padding:1.3rem 1.4rem; border-radius:2px; outline:none; resize:vertical;
-  min-height:160px; transition:border-color .3s; margin-bottom:1.2rem;
+  color:var(--bone); font-family:'Inter',sans-serif; font-size:.96rem; line-height:1.8;
+  padding:1.1rem 1.2rem; border-radius:2px; outline:none; resize:vertical;
+  min-height:130px; transition:border-color .3s;
 }
 .open-textarea:focus{ border-color:var(--copper); }
-.open-foot{ display:flex; align-items:center; justify-content:space-between; gap:1.2rem; flex-wrap:wrap; }
-.open-foot-input{
-  background:var(--panel); border:1px solid var(--line-strong); color:var(--bone);
-  font-family:'JetBrains Mono',monospace; font-size:.84rem;
-  padding:.85rem 1.1rem; border-radius:2px; outline:none; flex:1; min-width:220px;
-  transition:border-color .3s;
-}
-.open-foot-input:focus{ border-color:var(--copper); }
-.open-success{ display:none; padding:1.6rem 0; }
-.open-success.show{ display:block; }
+.cf-check-other{ grid-column:1/-1; border-style:dashed; }
 
 /* ── FOOTER ── */
 footer{
@@ -829,28 +821,6 @@ footer p{ color:var(--grey); font-size:.78rem; }
     </div>
   </section>
 
-  <!-- OPEN SECTION -->
-  <section id="open">
-    <div class="open-inner">
-      <div class="sec-eyebrow reveal" data-i18n="open.eyebrow">¿No sabes por dónde empezar?</div>
-      <h2 class="sec-title reveal" data-i18n="open.title">Hábl<em>anos,</em> sin formato.</h2>
-      <p class="open-quote reveal" data-i18n="open.quote">No necesitas tener claro el problema ni saber qué servicio buscas. Cuéntanos lo que está pasando en tus palabras — <em>nosotros lo ordenamos</em> y te decimos por dónde atacarlo.</p>
-
-      <form class="open-form reveal" id="openForm">
-        <textarea class="open-textarea" id="open-msg" required data-i18n-ph="open.msgPh" placeholder="Escribe como si nos lo estuvieras contando en persona: qué te frustra, qué has intentado, qué te gustaría que pasara..."></textarea>
-        <div class="open-foot">
-          <input class="open-foot-input" id="open-contact" type="text" required data-i18n-ph="open.contactPh" placeholder="Tu email o WhatsApp para responderte">
-          <button type="submit" class="cf-submit" data-sound="confirm" data-i18n="open.submit">Enviar mensaje →</button>
-        </div>
-      </form>
-
-      <div class="open-success" id="openSuccess">
-        <div class="cf-success-mark" data-i18n="open.successTitle">Recibido.</div>
-        <p data-i18n="open.successBody">Leeremos con calma lo que nos compartiste y te contactaremos para ayudarte a aclarar el siguiente paso.</p>
-      </div>
-    </div>
-  </section>
-
   <!-- CTA -->
   <section id="cta">
     <div class="cta-inner">
@@ -885,9 +855,14 @@ footer p{ color:var(--grey); font-size:.78rem; }
           <div class="cf-check-grid" id="cfAreaGrid"></div>
         </div>
 
+        <div class="open-panel" id="openPanel" style="display:none;">
+          <p class="open-quote" data-i18n="open.quote">No necesitas tener claro el problema ni saber qué servicio buscas. Cuéntanos lo que está pasando en tus palabras — <em>nosotros lo ordenamos</em> y te decimos por dónde atacarlo.</p>
+          <textarea class="open-textarea" id="cf-other-msg" data-i18n-ph="open.msgPh" placeholder="Escribe como si nos lo estuvieras contando en persona: qué te frustra, qué has intentado, qué te gustaría que pasara..."></textarea>
+        </div>
+
         <div class="cf-group">
           <label class="cf-label" data-i18n="form.problemLabel">Cuéntanos qué está pasando en tu operación</label>
-          <textarea class="cf-textarea" id="cf-problem" required data-i18n-ph="form.problemPh" placeholder="Describe la situación: qué proceso te quita tiempo, qué te gustaría lograr, qué has intentado..."></textarea>
+          <textarea class="cf-textarea" id="cf-problem" data-i18n-ph="form.problemPh" placeholder="Describe la situación: qué proceso te quita tiempo, qué te gustaría lograr, qué has intentado..."></textarea>
         </div>
 
         <div class="cf-row">
@@ -1269,14 +1244,9 @@ const I18N = {
     'form.successTitle': 'Solicitud recibida.',
     'form.successBody': 'Gracias por el detalle — revisaremos tu caso y te contactaremos en menos de 24 horas para conversar sobre cómo abordarlo.',
     'form.directWhatsapp': 'WhatsApp directo',
-    'open.eyebrow': '¿No sabes por dónde empezar?',
-    'open.title': 'Hábl<em>anos,</em> sin formato.',
+    'form.otherLabel': 'No veo lo que necesito / quiero contarlo a mi manera',
     'open.quote': 'No necesitas tener claro el problema ni saber qué servicio buscas. Cuéntanos lo que está pasando en tus palabras — <em>nosotros lo ordenamos</em> y te decimos por dónde atacarlo.',
     'open.msgPh': 'Escribe como si nos lo estuvieras contando en persona: qué te frustra, qué has intentado, qué te gustaría que pasara...',
-    'open.contactPh': 'Tu email o WhatsApp para responderte',
-    'open.submit': 'Enviar mensaje →',
-    'open.successTitle': 'Recibido.',
-    'open.successBody': 'Leeremos con calma lo que nos compartiste y te contactaremos para ayudarte a aclarar el siguiente paso.',
     'footer.copy': '© 2026 NEXOVA GT — Ingeniería digital para negocios reales.'
   },
   en: {
@@ -1345,14 +1315,9 @@ const I18N = {
     'form.successTitle': 'Request received.',
     'form.successBody': 'Thanks for the detail — we\'ll review your case and reach out in less than 24 hours to talk through how to approach it.',
     'form.directWhatsapp': 'Direct WhatsApp',
-    'open.eyebrow': 'Not sure where to start?',
-    'open.title': 'Talk t<em>o us,</em> no format needed.',
+    'form.otherLabel': 'I don\'t see what I need / I\'d rather explain it my way',
     'open.quote': 'You don\'t need to have the problem figured out or know which service you need. Tell us what\'s going on in your own words — <em>we\'ll sort it out</em> and tell you where to start.',
     'open.msgPh': 'Write it like you\'re telling us in person: what\'s frustrating you, what you\'ve already tried, what you\'d like to happen...',
-    'open.contactPh': 'Your email or WhatsApp so we can reply',
-    'open.submit': 'Send message →',
-    'open.successTitle': 'Got it.',
-    'open.successBody': 'We\'ll take time to read what you shared and reach out to help you figure out the next step.',
     'footer.copy': '© 2026 NEXOVA GT — Digital engineering for real businesses.'
   }
 };
@@ -1647,9 +1612,12 @@ const contactForm = document.getElementById('contactForm');
 const cfSuccess = document.getElementById('cfSuccess');
 let selectedAreas = [];
 
+let otherSelected = false;
+const openPanel = document.getElementById('openPanel');
+
 function renderAreaGrid(){
   selectedAreas = selectedAreas.filter(i => i < SERVICES.length);
-  cfAreaGrid.innerHTML = SERVICES.map((s,i)=>{
+  const cardsHtml = SERVICES.map((s,i)=>{
     const t = s[currentLang];
     const sel = selectedAreas.includes(i) ? 'selected' : '';
     return `
@@ -1659,12 +1627,28 @@ function renderAreaGrid(){
         <span class="cf-check-label">${t.title}</span>
       </label>`;
   }).join('');
+  const otherHtml = `
+      <label class="cf-check cf-check-other ${otherSelected?'selected':''}" id="cfOtherCheck">
+        <input type="checkbox">
+        <div class="cf-check-box"><span class="cf-check-tick">✓</span></div>
+        <span class="cf-check-label" data-i18n="form.otherLabel">${I18N[currentLang]['form.otherLabel']}</span>
+      </label>`;
+  cfAreaGrid.innerHTML = cardsHtml + otherHtml;
 }
 
 cfAreaGrid.addEventListener('click', (e)=>{
   const item = e.target.closest('.cf-check');
   if(!item) return;
   e.preventDefault();
+
+  if(item.id === 'cfOtherCheck'){
+    otherSelected = !otherSelected;
+    item.classList.toggle('selected');
+    openPanel.style.display = otherSelected ? 'block' : 'none';
+    initAudio(); playUIBlip();
+    return;
+  }
+
   const idx = parseInt(item.dataset.index);
   if(selectedAreas.includes(idx)){
     selectedAreas = selectedAreas.filter(i=>i!==idx);
@@ -1683,23 +1667,24 @@ contactForm.addEventListener('submit', (e)=>{
   const email = document.getElementById('cf-email').value.trim();
   const phone = document.getElementById('cf-phone').value.trim();
   const problem = document.getElementById('cf-problem').value.trim();
+  const otherMsg = document.getElementById('cf-other-msg').value.trim();
   const budget = document.getElementById('cf-budget').value;
   const timeline = document.getElementById('cf-timeline').value;
   const areas = selectedAreas.map(i => SERVICES[i][currentLang].title).join(', ') || '—';
 
   const subject = `Solicitud de diagnóstico — ${name}${company ? ' / ' + company : ''}`;
-  const body =
+  let body =
 `Nombre: ${name}
 Empresa: ${company || '—'}
 Email: ${email}
 Teléfono: ${phone || '—'}
 
-Área de interés: ${areas}
+Área de interés: ${areas}`;
 
-Descripción del problema:
-${problem}
+  if(problem) body += `\n\nDescripción del problema:\n${problem}`;
+  if(otherMsg) body += `\n\nMensaje sin formato:\n${otherMsg}`;
 
-Presupuesto: ${budget || '—'}
+  body += `\n\nPresupuesto: ${budget || '—'}
 Plazo: ${timeline || '—'}`;
 
   window.location.href = `mailto:hola@nexova.gt?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -1708,32 +1693,6 @@ Plazo: ${timeline || '—'}`;
   playConfirm();
   contactForm.style.display = 'none';
   cfSuccess.classList.add('show');
-});
-
-/* ============================================================
-   OPEN MESSAGE FORM
-   ============================================================ */
-const openForm = document.getElementById('openForm');
-const openSuccess = document.getElementById('openSuccess');
-
-openForm.addEventListener('submit', (e)=>{
-  e.preventDefault();
-  const msg = document.getElementById('open-msg').value.trim();
-  const contact = document.getElementById('open-contact').value.trim();
-
-  const subject = 'Mensaje abierto — Nexova';
-  const body =
-`Contacto: ${contact}
-
-Mensaje:
-${msg}`;
-
-  window.location.href = `mailto:hola@nexova.gt?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-  initAudio();
-  playConfirm();
-  openForm.style.display = 'none';
-  openSuccess.classList.add('show');
 });
 
 /* ============================================================
