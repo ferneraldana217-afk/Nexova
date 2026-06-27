@@ -6,6 +6,7 @@
 <title>NEXOVA — Ingeniería Digital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root{
   --void:#0B0C0E;
@@ -154,7 +155,7 @@ body{
 
 /* ============ SOUND TOGGLE ============ */
 #sound-toggle{
-  position:fixed; bottom:32px; right:32px; z-index:500;
+  position:fixed; bottom:32px; right:96px; z-index:500;
   width:42px; height:42px; border-radius:50%;
   background:rgba(21,23,26,.85);
   backdrop-filter:blur(10px);
@@ -165,6 +166,124 @@ body{
 }
 #sound-toggle:hover{ border-color:var(--copper); }
 #sound-toggle svg{ width:15px; height:15px; }
+
+/* ============ AI ASSISTANT BOT ============ */
+#bot-launcher{
+  position:fixed; bottom:28px; right:28px; z-index:600;
+  width:58px; height:58px; border-radius:50%;
+  background:var(--copper); color:var(--void);
+  border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 24px rgba(184,118,63,.35);
+  transition:transform .3s;
+}
+#bot-launcher:hover{ transform:scale(1.06); }
+#bot-launcher svg{ width:24px; height:24px; }
+#bot-launcher .bot-pulse{
+  position:absolute; inset:-4px; border-radius:50%;
+  border:1px solid var(--copper);
+  animation:botPulse 2.4s ease-out infinite;
+}
+@keyframes botPulse{
+  0%{ transform:scale(1); opacity:.7; }
+  100%{ transform:scale(1.5); opacity:0; }
+}
+#bot-launcher.open .bot-pulse{ display:none; }
+#bot-launcher .bot-dot{
+  position:absolute; top:2px; right:2px; width:10px; height:10px;
+  border-radius:50%; background:#4ADE80; border:2px solid var(--void);
+}
+
+#bot-panel{
+  position:fixed; bottom:98px; right:28px; z-index:600;
+  width:380px; max-width:calc(100vw - 40px);
+  height:min(600px,calc(100vh - 140px));
+  background:var(--panel); border:1px solid var(--line-strong);
+  border-radius:6px; overflow:hidden;
+  display:flex; flex-direction:column;
+  opacity:0; transform:translateY(16px) scale(.97);
+  pointer-events:none;
+  transition:opacity .3s ease, transform .3s ease;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+#bot-panel.open{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+
+.bot-header{
+  padding:1.1rem 1.3rem; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:.7rem;
+  background:var(--panel2);
+}
+.bot-header-dot{ width:8px; height:8px; border-radius:50%; background:#4ADE80; flex-shrink:0; }
+.bot-header-text{ flex:1; }
+.bot-header-name{ font-weight:500; font-size:.92rem; color:var(--bone); }
+.bot-header-name em{ color:var(--copper); font-style:italic; }
+.bot-header-status{ font-family:'JetBrains Mono',monospace; font-size:.64rem; color:var(--grey); letter-spacing:.06em; }
+.bot-header-close{
+  background:none; border:none; color:var(--grey); cursor:pointer;
+  width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+  transition:color .2s;
+}
+.bot-header-close:hover{ color:var(--copper); }
+.bot-header-close svg{ width:14px; height:14px; }
+
+.bot-messages{
+  flex:1; overflow-y:auto; padding:1.2rem 1.3rem;
+  display:flex; flex-direction:column; gap:.85rem;
+}
+.bot-msg{ max-width:88%; font-size:.86rem; line-height:1.65; }
+.bot-msg-bot{
+  align-self:flex-start; background:var(--panel2); color:var(--bone);
+  padding:.75rem 1rem; border-radius:3px 10px 10px 10px;
+  border-left:2px solid var(--copper-dim);
+}
+.bot-msg-bot strong{ color:var(--copper); font-weight:500; }
+.bot-msg-user{
+  align-self:flex-end; background:rgba(184,118,63,.14); color:var(--bone);
+  padding:.7rem .95rem; border-radius:10px 3px 10px 10px;
+}
+.bot-typing{ align-self:flex-start; display:flex; gap:4px; padding:.8rem 1rem; }
+.bot-typing span{
+  width:5px; height:5px; border-radius:50%; background:var(--copper-dim);
+  animation:botTyping 1.1s infinite ease-in-out;
+}
+.bot-typing span:nth-child(2){ animation-delay:.15s; }
+.bot-typing span:nth-child(3){ animation-delay:.3s; }
+@keyframes botTyping{ 0%,60%,100%{ transform:translateY(0); opacity:.4; } 30%{ transform:translateY(-4px); opacity:1; } }
+
+.bot-quick{
+  padding:0 1.3rem 1rem; display:flex; flex-wrap:wrap; gap:.5rem;
+  flex-shrink:0;
+}
+.bot-chip{
+  background:transparent; border:1px solid var(--line-strong); color:var(--bone);
+  font-size:.78rem; padding:.5rem .9rem; border-radius:20px; cursor:pointer;
+  transition:border-color .25s, background .25s; text-align:left;
+}
+.bot-chip:hover{ border-color:var(--copper); background:rgba(184,118,63,.08); }
+
+.bot-inputrow{
+  display:flex; gap:.6rem; padding:.9rem 1.1rem; border-top:1px solid var(--line);
+  background:var(--panel2); flex-shrink:0;
+}
+.bot-inputrow input{
+  flex:1; background:var(--void); border:1px solid var(--line-strong); color:var(--bone);
+  font-family:'Inter',sans-serif; font-size:.84rem; padding:.65rem .9rem;
+  border-radius:20px; outline:none; transition:border-color .25s;
+}
+.bot-inputrow input:focus{ border-color:var(--copper); }
+.bot-inputrow button{
+  width:38px; height:38px; border-radius:50%; flex-shrink:0;
+  background:var(--copper); border:none; color:var(--void); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:background .2s;
+}
+.bot-inputrow button:hover{ background:#C8854D; }
+.bot-inputrow button svg{ width:14px; height:14px; }
+
+@media(max-width:560px){
+  #bot-panel{ right:16px; bottom:90px; width:calc(100vw - 32px); }
+  #bot-launcher{ right:16px; bottom:20px; }
+  #sound-toggle{ right:78px; bottom:20px; }
+}
 
 /* ============ NAV ============ */
 nav{
@@ -361,86 +480,211 @@ nav.show{ opacity:1; transform:translateY(0); }
   .carousel-track{ padding-left:1.5rem; }
 }
 
-/* ── SERVICE DETAIL MODAL ── */
-.modal-overlay{
-  position:fixed; inset:0; z-index:2000;
-  background:rgba(11,12,14,.82);
-  backdrop-filter:blur(6px);
-  display:flex; align-items:center; justify-content:center;
-  padding:2rem;
-  opacity:0; pointer-events:none;
-  transition:opacity .35s ease;
-}
-.modal-overlay.open{ opacity:1; pointer-events:auto; }
+/* ── STEP SEQUENCE (simulated screen mockups) ── */
+.step-seq{ display:flex; gap:1.1rem; overflow-x:auto; padding:.3rem .1rem 1rem; scrollbar-width:thin; scrollbar-color:var(--copper-dim) transparent; }
+.step-card{ flex:0 0 134px; display:flex; flex-direction:column; gap:.6rem; }
+.step-card-num{ font-family:'JetBrains Mono',monospace; font-size:.62rem; color:var(--copper); letter-spacing:.08em; }
+.step-card-label{ font-size:.78rem; color:var(--grey); line-height:1.5; }
 
-.modal-panel{
-  background:var(--panel);
-  border:1px solid var(--line-strong);
-  max-width:640px; width:100%;
-  max-height:86vh; overflow-y:auto;
-  position:relative;
-  transform:translateY(24px) scale(.98);
-  transition:transform .4s cubic-bezier(.2,.8,.2,1);
-}
-.modal-overlay.open .modal-panel{ transform:translateY(0) scale(1); }
+.mockup{ width:134px; height:86px; background:var(--void); border:1px solid var(--line); border-radius:5px; position:relative; overflow:hidden; padding:9px; flex-shrink:0; }
+.mockup-chrome{ display:flex; gap:3px; margin-bottom:7px; }
+.mockup-chrome span{ width:5px; height:5px; border-radius:50%; background:var(--line-strong); }
+.m-line{ height:5px; border-radius:2px; background:var(--line-strong); margin-bottom:5px; }
+.m-line.copper{ background:var(--copper-dim); }
+.m-line.w80{ width:80%; } .m-line.w60{ width:60%; } .m-line.w40{ width:40%; margin-bottom:0; }
+.m-check{ width:11px; height:11px; border:1px solid var(--copper); border-radius:2px; display:inline-flex; align-items:center; justify-content:center; margin-right:6px; flex-shrink:0; font-size:7px; color:var(--copper); line-height:1; }
+.m-row{ display:flex; align-items:center; }
+.m-avatar{ width:20px; height:20px; border-radius:50%; border:1.5px solid var(--copper); flex-shrink:0; margin-right:8px; }
+.m-tag{ display:inline-block; font-size:.5rem; font-family:'JetBrains Mono',monospace; color:var(--copper); border:1px solid var(--copper-dim); border-radius:8px; padding:1px 7px; margin-top:6px; }
+.m-bars{ display:flex; align-items:flex-end; gap:4px; height:44px; }
+.m-bars i{ flex:1; background:var(--copper-dim); border-radius:1px; display:block; }
+.m-bars i.lit{ background:var(--copper); }
+.m-nodes{ position:relative; height:50px; }
+.m-node{ position:absolute; width:9px; height:9px; border-radius:50%; background:var(--line-strong); }
+.m-node.lit{ background:var(--copper); }
+.m-edge{ position:absolute; height:1px; background:var(--line-strong); transform-origin:left center; }
+.m-chart{ width:100%; height:42px; }
+.m-chart svg{ width:100%; height:100%; display:block; }
+.m-badge-ok{ position:absolute; bottom:8px; right:8px; width:16px; height:16px; border-radius:50%; background:var(--copper); display:flex; align-items:center; justify-content:center; font-size:8px; color:var(--void); }
 
-.modal-top{
-  padding:2.6rem 2.8rem 2rem;
-  border-bottom:1px solid var(--line);
-  position:relative;
+.step-arrow{ display:flex; align-items:center; color:var(--line-strong); flex-shrink:0; padding-top:38px; font-size:1rem; }
+
+.step-seq-compact{ display:flex; flex-direction:column; gap:.6rem; margin-top:.6rem; }
+.step-card-compact{ display:flex; align-items:flex-start; gap:.7rem; }
+.step-card-compact .mockup{ width:64px; height:46px; padding:5px; }
+.step-card-compact .step-card-label{ font-size:.74rem; padding-top:2px; color:var(--bone); }
+.step-card-compact .step-card-label strong{ color:var(--copper); }
+.step-card-compact .m-bars{ height:24px; } .step-card-compact .m-nodes{ height:30px; } .step-card-compact .m-chart{ height:24px; }
+.step-card-compact .m-line{ height:4px; margin-bottom:4px; }
+.step-card-compact .m-avatar{ width:14px; height:14px; margin-right:5px; }
+.step-card-compact .m-tag{ font-size:.42rem; padding:0 5px; margin-top:3px; }
+.step-card-compact .m-badge-ok{ width:11px; height:11px; bottom:4px; right:4px; font-size:6px; }
+
+@media(max-width:560px){
+  .step-card{ flex:0 0 116px; }
+  .mockup{ width:116px; }
 }
-.modal-close{
-  position:absolute; top:1.8rem; right:1.8rem;
-  width:36px; height:36px; border-radius:50%;
-  border:1px solid var(--line-strong); background:transparent;
-  color:var(--bone); cursor:pointer;
+
+.pres-trigger{
+  margin-top:.4rem; background:none; border:1px solid var(--copper-dim); color:var(--copper);
+  font-family:'JetBrains Mono',monospace; font-size:.74rem; letter-spacing:.06em;
+  padding:.65rem 1.3rem; border-radius:2px; cursor:pointer; transition:all .25s;
+}
+.pres-trigger:hover{ background:var(--copper); color:var(--void); }
+
+/* ============ PRESENTATION MODE (fullscreen slide deck) ============ */
+#presentationOverlay{
+  position:fixed; inset:0; z-index:5000;
+  background:radial-gradient(ellipse at 50% 45%, #181a1e 0%, #0B0C0E 70%);
   display:flex; align-items:center; justify-content:center;
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:opacity .4s ease, visibility .4s;
+}
+#presentationOverlay.open{ opacity:1; visibility:visible; pointer-events:auto; }
+.pres-grid-bg{
+  position:absolute; inset:0; pointer-events:none;
+  background-image:linear-gradient(rgba(237,237,232,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(237,237,232,.025) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.pres-close{
+  position:absolute; top:28px; right:32px; z-index:3;
+  width:42px; height:42px; border-radius:50%;
+  border:1px solid var(--line-strong); background:rgba(21,23,26,.7); color:var(--bone);
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
   transition:border-color .3s, transform .3s;
 }
-.modal-close:hover{ border-color:var(--copper); transform:rotate(90deg); }
-.modal-close svg{ width:14px; height:14px; }
+.pres-close:hover{ border-color:var(--copper); transform:rotate(90deg); }
+.pres-close svg{ width:16px; height:16px; }
+.pres-counter{
+  position:absolute; top:32px; left:36px; z-index:3;
+  font-family:'JetBrains Mono',monospace; font-size:.78rem; color:var(--grey); letter-spacing:.1em;
+}
+.pres-counter em{ color:var(--copper); font-style:normal; }
+.pres-service-name{
+  position:absolute; top:58px; left:36px; z-index:3;
+  font-family:'Fraunces',serif; font-style:italic; font-size:1rem; color:var(--bone); opacity:.55;
+}
+.pres-nav{
+  position:absolute; top:50%; transform:translateY(-50%); z-index:3;
+  width:54px; height:54px; border-radius:50%;
+  border:1px solid var(--line-strong); background:rgba(21,23,26,.6); color:var(--bone);
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  transition:border-color .3s, background .3s, transform .2s;
+}
+.pres-nav:hover{ border-color:var(--copper); background:rgba(184,118,63,.14); transform:translateY(-50%) scale(1.05); }
+.pres-nav svg{ width:20px; height:20px; }
+.pres-nav-prev{ left:24px; } .pres-nav-next{ right:24px; }
+.pres-nav.disabled{ opacity:.2; pointer-events:none; }
 
-.modal-num{
-  font-family:'JetBrains Mono',monospace; font-size:.72rem;
-  color:var(--copper); letter-spacing:.1em; margin-bottom:1.1rem;
+.pres-stage{ position:relative; width:min(880px,86vw); height:min(560px,78vh); display:flex; align-items:center; justify-content:center; }
+.pres-slide{ position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:2rem; animation:presSlideIn .5s ease; }
+@keyframes presSlideIn{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:translateY(0); } }
+.pres-bg-num{
+  position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+  font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:min(16rem,38vw); line-height:1;
+  color:rgba(184,118,63,.07); pointer-events:none; user-select:none; z-index:0;
 }
-.modal-top h3{
-  font-family:'Fraunces',serif; font-weight:500;
-  font-size:clamp(1.6rem,3vw,2.1rem); letter-spacing:-.01em;
-  margin-bottom:1rem; max-width:80%;
+.pres-eyebrow{
+  font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--copper);
+  letter-spacing:.18em; text-transform:uppercase; margin-bottom:1.2rem; position:relative; z-index:1;
 }
-.modal-top p{ color:var(--grey); line-height:1.8; font-size:.96rem; }
+.pres-title{
+  font-family:'Fraunces',serif; font-weight:500; font-size:clamp(1.4rem,2.6vw,2.1rem);
+  letter-spacing:-.01em; max-width:600px; line-height:1.3; margin-top:1.8rem; position:relative; z-index:1;
+}
+.pres-visual-wrap{ position:relative; z-index:1; }
+.pres-glow{
+  position:absolute; inset:-50px; border-radius:50%;
+  background:radial-gradient(circle, rgba(184,118,63,.22) 0%, transparent 70%);
+  animation:presGlowPulse 3s ease-in-out infinite; pointer-events:none; z-index:0;
+}
+@keyframes presGlowPulse{ 0%,100%{ opacity:.5; transform:scale(1); } 50%{ opacity:1; transform:scale(1.1); } }
 
-.modal-body{ padding:2.2rem 2.8rem 2.6rem; }
-.modal-block{ margin-bottom:2rem; }
-.modal-block:last-of-type{ margin-bottom:2.4rem; }
-.modal-block-label{
-  font-family:'JetBrains Mono',monospace; font-size:.68rem;
-  color:var(--copper); letter-spacing:.12em; text-transform:uppercase;
-  margin-bottom:.9rem;
-}
-.modal-block p{ color:var(--bone); font-size:.94rem; line-height:1.8; font-weight:300; }
-.modal-includes{ list-style:none; }
-.modal-includes li{
-  padding:.65rem 0; border-bottom:1px solid var(--line);
-  font-size:.9rem; color:var(--bone); font-weight:300;
-  display:flex; align-items:baseline; gap:.7rem;
-}
-.modal-includes li:last-child{ border-bottom:none; }
-.modal-includes li::before{
-  content:'—'; color:var(--copper); flex-shrink:0;
-}
-.modal-cta{
-  display:inline-flex; align-items:center; gap:.6rem;
-  background:var(--copper); color:var(--void);
-  padding:.9rem 2rem; border-radius:2px;
-  font-weight:500; font-size:.9rem;
-  text-decoration:none; letter-spacing:.01em;
-  transition:background .3s, transform .3s;
-}
-.modal-cta:hover{ background:#C8854D; transform:translateY(-2px); }
+.pres-dots{ position:absolute; bottom:26px; left:50%; transform:translateX(-50%); display:flex; gap:.6rem; z-index:3; }
+.pres-dot{ width:7px; height:7px; border-radius:50%; background:var(--line-strong); cursor:pointer; transition:background .3s, transform .3s; }
+.pres-dot.active{ background:var(--copper); transform:scale(1.4); }
 
+/* ── BIG ANIMATED MOCKUPS (presentation) ── */
+.pres-mockup{ width:300px; height:180px; position:relative; z-index:1; }
+
+.pres-m-intake{ background:var(--void); border:1px solid var(--line-strong); border-radius:10px; padding:26px; text-align:left; }
+.pres-m-intake .pm-chrome{ display:flex; gap:5px; margin-bottom:20px; }
+.pres-m-intake .pm-chrome span{ width:7px; height:7px; border-radius:50%; background:var(--line-strong); }
+.pres-m-intake .pm-line{ height:9px; border-radius:3px; background:var(--line-strong); margin-bottom:13px; width:0; animation:pmLineGrow .6s ease forwards; }
+.pres-m-intake .pm-line:nth-of-type(2){ animation-delay:.15s; }
+.pres-m-intake .pm-check-row{ display:flex; align-items:center; gap:10px; opacity:0; animation:pmFadeIn .5s ease forwards .55s; }
+.pres-m-intake .pm-check-row .pm-line{ margin-bottom:0; animation-delay:.6s; }
+.pres-m-intake .pm-check{ width:20px; height:20px; border:1.5px solid var(--copper); border-radius:5px; display:flex; align-items:center; justify-content:center; color:var(--copper); font-size:12px; flex-shrink:0; }
+@keyframes pmLineGrow{ from{ width:0; } to{ width:var(--w,70%); } }
+@keyframes pmFadeIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
+
+.pres-m-data{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; height:100%; }
+.pres-m-data .pm-avatar-ring{ width:64px; height:64px; border-radius:50%; border:2px solid var(--copper); position:relative; animation:pmPop .5s ease; }
+.pres-m-data .pm-avatar-ring::before{ content:''; position:absolute; inset:-9px; border-radius:50%; border:1px solid var(--copper-dim); animation:pmRingExpand 1.8s ease-out infinite; }
+.pres-m-data .pm-tagrow{ display:flex; gap:10px; opacity:0; animation:pmFadeIn .5s ease forwards .45s; }
+.pres-m-data .pm-tag{ font-family:'JetBrains Mono',monospace; font-size:.66rem; color:var(--copper); border:1px solid var(--copper-dim); border-radius:14px; padding:6px 15px; }
+@keyframes pmPop{ from{ transform:scale(.6); opacity:0; } to{ transform:scale(1); opacity:1; } }
+@keyframes pmRingExpand{ 0%{ transform:scale(1); opacity:.6; } 100%{ transform:scale(1.7); opacity:0; } }
+
+.pres-m-audit{ position:relative; padding:14px 0 0; height:100%; }
+.pres-m-audit .pm-scan{ position:absolute; left:6px; right:6px; height:2px; top:10%; background:linear-gradient(90deg,transparent,var(--copper),transparent); animation:pmScan 2s ease-in-out infinite; z-index:2; }
+@keyframes pmScan{ 0%{ top:6%; } 50%{ top:88%; } 100%{ top:6%; } }
+.pres-m-audit .pm-bars{ display:flex; align-items:flex-end; gap:10px; height:150px; padding:0 6px; }
+.pres-m-audit .pm-bars i{ flex:1; background:var(--copper-dim); border-radius:3px 3px 0 0; height:0; animation:pmBarGrow .8s cubic-bezier(.2,.8,.2,1) forwards; }
+.pres-m-audit .pm-bars i.lit{ background:var(--copper); }
+.pres-m-audit .pm-bars i:nth-child(1){ animation-delay:.05s; } .pres-m-audit .pm-bars i:nth-child(2){ animation-delay:.15s; }
+.pres-m-audit .pm-bars i:nth-child(3){ animation-delay:.25s; } .pres-m-audit .pm-bars i:nth-child(4){ animation-delay:.35s; }
+.pres-m-audit .pm-bars i:nth-child(5){ animation-delay:.45s; } .pres-m-audit .pm-bars i:nth-child(6){ animation-delay:.55s; }
+@keyframes pmBarGrow{ to{ height:var(--h); } }
+
+.pres-m-strategy svg{ width:300px; height:180px; overflow:visible; }
+.pres-m-strategy .pm-edge{ stroke:var(--copper-dim); stroke-width:1.5; fill:none; stroke-dasharray:6 5; stroke-dashoffset:260; animation:pmDash 1.3s ease forwards; }
+.pres-m-strategy .pm-node{ fill:var(--line-strong); opacity:0; animation:pmFadeIn .4s ease forwards .9s; }
+.pres-m-strategy .pm-node.lit{ fill:var(--copper); animation:pmNodeIn .4s ease forwards .9s, pmNodePulse 1.6s ease-in-out infinite 1.3s; }
+@keyframes pmDash{ to{ stroke-dashoffset:0; } }
+@keyframes pmNodeIn{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes pmNodePulse{ 0%,100%{ r:7; } 50%{ r:9; } }
+
+.pres-m-delivery{ position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:14px; }
+.pres-m-delivery svg{ width:280px; height:120px; }
+.pres-m-delivery .pm-path{ fill:none; stroke:var(--copper); stroke-width:2.5; stroke-dasharray:320; stroke-dashoffset:320; animation:pmDash2 1.3s ease forwards .15s; }
+@keyframes pmDash2{ to{ stroke-dashoffset:0; } }
+.pres-m-delivery .pm-badge{ width:34px; height:34px; border-radius:50%; background:var(--copper); color:var(--void); display:flex; align-items:center; justify-content:center; font-size:16px; transform:scale(0); animation:pmPop .4s ease forwards 1.2s; }
+
+@media(max-width:768px){
+  .pres-stage{ width:92vw; height:70vh; }
+  .pres-nav{ width:42px; height:42px; }
+  .pres-nav-prev{ left:8px; } .pres-nav-next{ right:8px; }
+  .pres-mockup{ width:240px; }
+  .pres-m-audit .pm-bars{ height:110px; }
+  .pres-m-strategy svg, .pres-m-delivery svg{ width:240px; }
+}
 body.modal-open{ overflow:hidden; }
+
+/* ── PRESENTATION SUMMARY SLIDE ── */
+.pres-slide-summary{ max-width:680px; }
+.pres-summary-grid{ display:grid; grid-template-columns:1fr 1fr; gap:2.4rem; text-align:left; margin-bottom:2.2rem; position:relative; z-index:1; }
+.pres-summary-label{
+  font-family:'JetBrains Mono',monospace; font-size:.66rem; color:var(--copper);
+  letter-spacing:.12em; text-transform:uppercase; margin-bottom:.7rem;
+}
+.pres-summary-text{ color:var(--bone); font-size:.88rem; line-height:1.7; font-weight:300; margin-bottom:1.6rem; }
+.pres-summary-list{ list-style:none; }
+.pres-summary-list li{
+  padding:.55rem 0; border-bottom:1px solid var(--line);
+  font-size:.85rem; color:var(--bone); font-weight:300;
+  display:flex; align-items:baseline; gap:.6rem;
+}
+.pres-summary-list li:last-child{ border-bottom:none; }
+.pres-summary-list li::before{ content:'—'; color:var(--copper); flex-shrink:0; }
+.pres-summary-cta{
+  display:inline-flex; align-items:center; gap:.5rem; text-decoration:none;
+  background:var(--copper); color:var(--void); border-color:var(--copper);
+}
+.pres-summary-cta:hover{ background:#C8854D; }
+@media(max-width:768px){
+  .pres-summary-grid{ grid-template-columns:1fr; gap:1.4rem; text-align:left; }
+}
 
 /* ── SECTION SHARED ── */
 section{ padding:8rem 4rem; position:relative; }
@@ -672,6 +916,34 @@ footer p{ color:var(--grey); font-size:.78rem; }
   <svg id="soundIconOff" viewBox="0 0 24 24" fill="none" stroke="#6B6E73" stroke-width="1.4" style="display:none"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
 </div>
 
+<!-- ============ AI ASSISTANT BOT ============ -->
+<button id="bot-launcher" aria-label="Asistente Nexova">
+  <span class="bot-pulse"></span>
+  <span class="bot-dot"></span>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2a3 3 0 0 1 3 3v1h1a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-6a3 3 0 0 1 3-3h1V5a3 3 0 0 1 3-3z"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="15" cy="13" r="1" fill="currentColor"/><path d="M9 17h6"/><path d="M12 2v0"/></svg>
+</button>
+
+<div id="bot-panel">
+  <div class="bot-header">
+    <span class="bot-header-dot"></span>
+    <div class="bot-header-text">
+      <div class="bot-header-name">NEX<em>OVA</em> · <span id="botHeaderRole">Asistente</span></div>
+      <div class="bot-header-status" id="botHeaderStatus">EN LÍNEA</div>
+    </div>
+    <button class="bot-header-close" id="botClose" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="bot-messages" id="botMessages"></div>
+  <div class="bot-quick" id="botQuick"></div>
+  <form class="bot-inputrow" id="botInputRow">
+    <input type="text" id="botInput" autocomplete="off" placeholder="Escribe tu pregunta...">
+    <button type="submit" aria-label="Enviar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </form>
+</div>
+
 <!-- ============ NAV ============ -->
 <nav id="mainNav">
   <div class="nav-logo">NEX<em>OVA</em></div>
@@ -721,33 +993,22 @@ footer p{ color:var(--grey); font-size:.78rem; }
     </div>
   </div>
 
-  <!-- SERVICE DETAIL MODAL -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-panel">
-      <div class="modal-top">
-        <button class="modal-close" id="modalClose" data-sound="ui" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-        <div class="modal-num" id="modalNum">01</div>
-        <h3 id="modalTitle"></h3>
-        <p id="modalDesc"></p>
-      </div>
-      <div class="modal-body">
-        <div class="modal-block">
-          <div class="modal-block-label" data-i18n="modal.problemLabel">El problema que resuelve</div>
-          <p id="modalProblem"></p>
-        </div>
-        <div class="modal-block">
-          <div class="modal-block-label" data-i18n="modal.includesLabel">Qué incluye</div>
-          <ul class="modal-includes" id="modalIncludes"></ul>
-        </div>
-        <div class="modal-block">
-          <div class="modal-block-label" data-i18n="modal.idealLabel">Ideal para</div>
-          <p id="modalIdeal"></p>
-        </div>
-        <a href="#cta" class="modal-cta" id="modalCta" data-sound="confirm" data-i18n="modal.cta">Solicitar diagnóstico →</a>
-      </div>
-    </div>
+  <!-- PRESENTATION MODE -->
+  <div id="presentationOverlay">
+    <div class="pres-grid-bg"></div>
+    <button class="pres-close" id="presClose" data-sound="ui" aria-label="Cerrar presentación">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="pres-counter" id="presCounter"></div>
+    <div class="pres-service-name" id="presServiceName"></div>
+    <button class="pres-nav pres-nav-prev" id="presPrev" aria-label="Anterior">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="pres-stage" id="presStage"></div>
+    <button class="pres-nav pres-nav-next" id="presNext" aria-label="Siguiente">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <div class="pres-dots" id="presDots"></div>
   </div>
 
   <!-- SERVICES -->
@@ -916,6 +1177,7 @@ footer p{ color:var(--grey); font-size:.78rem; }
   </footer>
 </div>
 
+<script src="bot-knowledge.js"></script>
 <script>
 /* ============================================================
    AUDIO ENGINE — minimal, low-register, procedural
@@ -1192,7 +1454,7 @@ const I18N = {
     'hero.ctaPrimary': 'Solicitar diagnóstico →',
     'hero.ctaGhost': 'Ver capacidades',
     'hero.est': 'EST. 2026',
-    'carousel.cta': 'Ver detalle →',
+    'carousel.cta': 'Ver presentación →',
     'modal.problemLabel': 'El problema que resuelve',
     'modal.includesLabel': 'Qué incluye',
     'modal.idealLabel': 'Ideal para',
@@ -1263,7 +1525,7 @@ const I18N = {
     'hero.ctaPrimary': 'Request a diagnostic →',
     'hero.ctaGhost': 'View capabilities',
     'hero.est': 'EST. 2026',
-    'carousel.cta': 'View detail →',
+    'carousel.cta': 'View presentation →',
     'modal.problemLabel': 'The problem it solves',
     'modal.includesLabel': 'What\'s included',
     'modal.idealLabel': 'Ideal for',
@@ -1344,6 +1606,7 @@ function applyLanguage(lang){
   renderCards();
   renderServiceRows();
   renderAreaGrid();
+  if(typeof updateBotStaticText === 'function') updateBotStaticText();
 }
 
 document.getElementById('langEs').addEventListener('click', ()=>{ initAudio(); playUIBlip(); applyLanguage('es'); });
@@ -1360,90 +1623,229 @@ const SERVICES = [
     es: { title: 'Desarrollo de Software', desc: 'Sistemas a medida que se adaptan a tu operación.',
       problem: 'Tu negocio usa Excel, WhatsApp y dos o tres sistemas que no se hablan entre sí. Cada proceso requiere copiar datos manualmente de un lado a otro, y los errores humanos cuestan tiempo y dinero.',
       includes: ['Sistema a medida diseñado para tu operación específica', 'Integración con tus herramientas actuales', 'Capacitación completa para tu equipo', 'Soporte técnico post-lanzamiento'],
-      ideal: 'Negocios con procesos repetitivos que ya superaron lo que Excel o herramientas genéricas pueden ofrecer.', tags: ['ERP','CRM','APIs'] },
+      ideal: 'Negocios con procesos repetitivos que ya superaron lo que Excel o herramientas genéricas pueden ofrecer.', tags: ['ERP','CRM','APIs'],
+      keywords: ['necesito un sistema','quiero un sistema','app para mi negocio','plataforma a medida','base de datos','gestion interna','sistema a medida','software a medida','sistema propio'],
+      steps: [
+        { type:'intake', label:'Mapeamos qué procesos vive tu equipo hoy' },
+        { type:'data', label:'Definimos tipo de negocio, volumen y prioridades' },
+        { type:'audit', label:'Revisamos tus sistemas y herramientas actuales' },
+        { type:'strategy', label:'Diseñamos la arquitectura del sistema a construir' },
+        { type:'delivery', label:'Entregamos el sistema funcionando y capacitamos a tu equipo' }
+      ] },
     en: { title: 'Software Development', desc: 'Custom systems built around your operation.',
       problem: 'Your business runs on Excel, WhatsApp, and two or three systems that don\'t talk to each other. Every process means copying data back and forth manually, and human error costs time and money.',
       includes: ['Custom system designed for your specific operation', 'Integration with your current tools', 'Full training for your team', 'Post-launch technical support'],
-      ideal: 'Businesses with repetitive processes that have already outgrown Excel or generic tools.', tags: ['ERP','CRM','APIs'] }
+      ideal: 'Businesses with repetitive processes that have already outgrown Excel or generic tools.', tags: ['ERP','CRM','APIs'],
+      keywords: ['need a system','want a system','app for my business','custom platform','database','internal management','custom system','custom software'],
+      steps: [
+        { type:'intake', label:'We map what your team\'s processes look like today' },
+        { type:'data', label:'We define business type, volume and priorities' },
+        { type:'audit', label:'We review your current systems and tools' },
+        { type:'strategy', label:'We design the architecture of the system to build' },
+        { type:'delivery', label:'We deliver the working system and train your team' }
+      ] }
   },
   {
     num: '02',
     es: { title: 'Plataformas Web', desc: 'Sitios rápidos y escalables que convierten visitantes en clientes.',
       problem: 'Tu sitio actual es lento, no genera clientes, o simplemente no existe — y cada día sin presencia digital sólida es una oportunidad que se va con la competencia.',
       includes: ['Diseño a medida, no plantillas genéricas', 'Optimización para buscadores (SEO)', 'Integración con WhatsApp, CRM o tienda en línea', 'Hosting y dominio configurados'],
-      ideal: 'Negocios que necesitan presencia digital profesional o quieren renovar un sitio que ya no representa su nivel.', tags: ['E-commerce','SEO'] },
+      ideal: 'Negocios que necesitan presencia digital profesional o quieren renovar un sitio que ya no representa su nivel.', tags: ['E-commerce','SEO'],
+      keywords: ['pagina web','sitio web','mi web no convierte','necesito una pagina','tienda en linea','vender en linea','presencia digital','no tengo pagina web','quiero una pagina'],
+      steps: [
+        { type:'intake', label:'Entendemos qué necesita lograr tu sitio' },
+        { type:'data', label:'Definimos tipo de negocio y público objetivo' },
+        { type:'audit', label:'Analizamos tu sitio actual y tu tráfico' },
+        { type:'strategy', label:'Diseñamos estructura, SEO y experiencia de usuario' },
+        { type:'delivery', label:'Lanzamos el sitio y medimos resultados reales' }
+      ] },
     en: { title: 'Web Platforms', desc: 'Fast, scalable sites that turn visitors into customers.',
       problem: 'Your current site is slow, generates no leads, or simply doesn\'t exist — and every day without a solid digital presence is an opportunity going to a competitor.',
       includes: ['Custom design, not generic templates', 'Search engine optimization (SEO)', 'Integration with WhatsApp, CRM, or online store', 'Hosting and domain fully configured'],
-      ideal: 'Businesses that need a professional digital presence or want to replace a site that no longer matches their level.', tags: ['E-commerce','SEO'] }
+      ideal: 'Businesses that need a professional digital presence or want to replace a site that no longer matches their level.', tags: ['E-commerce','SEO'],
+      keywords: ['website','landing page','online store','need a website','web presence','my site doesnt convert','want a website'],
+      steps: [
+        { type:'intake', label:'We understand what your site needs to achieve' },
+        { type:'data', label:'We define business type and target audience' },
+        { type:'audit', label:'We analyze your current site and traffic' },
+        { type:'strategy', label:'We design structure, SEO and user experience' },
+        { type:'delivery', label:'We launch the site and measure real results' }
+      ] }
   },
   {
     num: '03',
     es: { title: 'Apps Móviles', desc: 'Aplicaciones nativas e híbridas para iOS y Android.',
       problem: 'Tus clientes viven en su teléfono, pero tu negocio solo existe en mostrador o en una web de escritorio — perdiendo la oportunidad de fidelizarlos donde pasan más tiempo.',
       includes: ['App nativa o híbrida según tu presupuesto', 'Diseño de experiencia de usuario (UX)', 'Publicación en App Store y Google Play', 'Mantenimiento y actualizaciones'],
-      ideal: 'Negocios con clientes recurrentes que se beneficiarían de pedidos, reservas o fidelización desde el móvil.', tags: ['iOS','Android'] },
+      ideal: 'Negocios con clientes recurrentes que se beneficiarían de pedidos, reservas o fidelización desde el móvil.', tags: ['iOS','Android'],
+      keywords: ['necesito una app','aplicacion movil','app para clientes','pedidos desde el celular','quiero una app','app de pedidos','app de reservas'],
+      steps: [
+        { type:'intake', label:'Identificamos qué resolvería una app para tus clientes' },
+        { type:'data', label:'Definimos tipo de negocio y comportamiento de tus usuarios' },
+        { type:'audit', label:'Revisamos cómo interactúan hoy con tu negocio' },
+        { type:'strategy', label:'Diseñamos la experiencia y funciones clave de la app' },
+        { type:'delivery', label:'Publicamos en tiendas y damos seguimiento post-lanzamiento' }
+      ] },
     en: { title: 'Mobile Apps', desc: 'Native and hybrid applications for iOS and Android.',
       problem: 'Your customers live on their phones, but your business only exists at the counter or on a desktop website — missing the chance to build loyalty where they spend the most time.',
       includes: ['Native or hybrid app depending on your budget', 'User experience (UX) design', 'Publishing on the App Store and Google Play', 'Maintenance and updates'],
-      ideal: 'Businesses with repeat customers who would benefit from mobile orders, bookings, or loyalty programs.', tags: ['iOS','Android'] }
+      ideal: 'Businesses with repeat customers who would benefit from mobile orders, bookings, or loyalty programs.', tags: ['iOS','Android'],
+      keywords: ['need an app','mobile app','app for customers','want an app','ordering app','booking app'],
+      steps: [
+        { type:'intake', label:'We identify what an app would solve for your customers' },
+        { type:'data', label:'We define business type and your users\' behavior' },
+        { type:'audit', label:'We review how they interact with your business today' },
+        { type:'strategy', label:'We design the app\'s experience and key features' },
+        { type:'delivery', label:'We publish to app stores and follow up post-launch' }
+      ] }
   },
   {
     num: '04',
     es: { title: 'Análisis de Datos', desc: 'Dashboards en tiempo real que convierten datos en decisiones.',
       problem: 'Tienes datos de ventas, inventario y clientes — pero están dispersos en archivos distintos, y tomar una decisión informada te cuesta horas de armar reportes manuales.',
       includes: ['Dashboard centralizado y en tiempo real', 'Conexión con tus fuentes de datos actuales', 'Reportes automáticos programados', 'Capacitación para interpretar y usar los datos'],
-      ideal: 'Dueños y gerentes que toman decisiones importantes sin tener la información clara a la mano.', tags: ['BI','SQL','Predictivo'] },
+      ideal: 'Dueños y gerentes que toman decisiones importantes sin tener la información clara a la mano.', tags: ['BI','SQL','Predictivo'],
+      keywords: ['no entiendo mis numeros','reportes manuales','necesito un dashboard','decisiones con datos','no sé qué esta pasando con mi negocio','metricas','quiero ver mis datos','analizar mis numeros'],
+      steps: [
+        { type:'intake', label:'Identificamos qué decisiones necesitas tomar mejor' },
+        { type:'data', label:'Definimos tipo de negocio y métricas que importan' },
+        { type:'audit', label:'Revisamos dónde están tus datos hoy (Excel, sistemas, etc.)' },
+        { type:'strategy', label:'Diseñamos el dashboard y los reportes clave' },
+        { type:'delivery', label:'Entregamos visibilidad en tiempo real de tu negocio' }
+      ] },
     en: { title: 'Data Analysis', desc: 'Real-time dashboards that turn data into decisions.',
       problem: 'You have sales, inventory, and customer data — but it\'s scattered across different files, and making an informed decision costs you hours of building manual reports.',
       includes: ['Centralized, real-time dashboard', 'Connection to your current data sources', 'Scheduled automatic reports', 'Training to interpret and use the data'],
-      ideal: 'Owners and managers making important decisions without clear information on hand.', tags: ['BI','SQL','Predictive'] }
+      ideal: 'Owners and managers making important decisions without clear information on hand.', tags: ['BI','SQL','Predictive'],
+      keywords: ['dont understand my numbers','manual reports','need a dashboard','data driven decisions','whats happening with my business','metrics','analyze my sales'],
+      steps: [
+        { type:'intake', label:'We identify which decisions you need to make better' },
+        { type:'data', label:'We define business type and the metrics that matter' },
+        { type:'audit', label:'We review where your data lives today (Excel, systems, etc.)' },
+        { type:'strategy', label:'We design the dashboard and key reports' },
+        { type:'delivery', label:'We deliver real-time visibility into your business' }
+      ] }
   },
   {
     num: '05',
     es: { title: 'Marketing Digital', desc: 'Estrategias de adquisición basadas en datos reales.',
       problem: 'Inviertes en publicidad sin saber realmente qué funciona, o no inviertes porque no sabes por dónde empezar — y mientras tanto la competencia capta a tus clientes potenciales.',
       includes: ['Estrategia de campañas en Meta y Google Ads', 'Definición de audiencia y segmentación', 'Reportes de resultados y retorno de inversión', 'Optimización continua basada en datos'],
-      ideal: 'Negocios listos para invertir en publicidad con un caso de éxito o producto ya validado.', tags: ['Ads','Analytics'] },
+      ideal: 'Negocios listos para invertir en publicidad con un caso de éxito o producto ya validado.', tags: ['Ads','Analytics'],
+      keywords: ['necesito incrementar mis ventas','aumentar mis ventas','aumentar ventas','vender mas','quiero vender mas','conseguir clientes','quiero mas clientes','no tengo clientes','publicidad','anuncios','redes sociales','quiero crecer mis ventas','captar clientes','generar mas ventas','mejorar mis ventas','mejorar ventas','como mejorar mis ventas'],
+      steps: [
+        { type:'intake', label:'Revisamos la actualidad de tu negocio' },
+        { type:'data', label:'Validamos tipo de negocio y áreas de interés' },
+        { type:'audit', label:'Analizamos tu posición actual en redes sociales' },
+        { type:'strategy', label:'Definimos el impacto y necesidad (ej. ecommerce)' },
+        { type:'delivery', label:'Lanzamos campañas y medimos retorno real' }
+      ] },
     en: { title: 'Digital Marketing', desc: 'Acquisition strategies based on real data.',
       problem: 'You spend on advertising without really knowing what works, or you don\'t invest because you don\'t know where to start — meanwhile competitors capture your potential customers.',
       includes: ['Campaign strategy on Meta and Google Ads', 'Audience definition and segmentation', 'Performance and ROI reporting', 'Continuous data-driven optimization'],
-      ideal: 'Businesses ready to invest in advertising with a proven case or validated product.', tags: ['Ads','Analytics'] }
+      ideal: 'Businesses ready to invest in advertising with a proven case or validated product.', tags: ['Ads','Analytics'],
+      keywords: ['need to increase my sales','increase sales','sell more','want more customers','get more customers','no customers','advertising','ads','social media','grow my sales','generate more sales'],
+      steps: [
+        { type:'intake', label:'We review your business\'s current state' },
+        { type:'data', label:'We validate business type and areas of interest' },
+        { type:'audit', label:'We analyze your current social media position' },
+        { type:'strategy', label:'We define the impact and need (e.g. ecommerce)' },
+        { type:'delivery', label:'We launch campaigns and measure real ROI' }
+      ] }
   },
   {
     num: '06',
     es: { title: 'Cloud & Infraestructura', desc: 'Arquitectura escalable que crece con tu negocio.',
       problem: 'Tu sistema se cae en los momentos de más ventas, o sientes que en cualquier momento "algo va a tronar" porque todo corre sobre infraestructura improvisada.',
       includes: ['Migración a infraestructura en la nube', 'Configuración de respaldos automáticos', 'Monitoreo y alertas de funcionamiento', 'Arquitectura preparada para crecer'],
-      ideal: 'Negocios cuyo sistema actual ya no soporta el volumen de operación o que necesitan mayor estabilidad.', tags: ['AWS','DevOps'] },
+      ideal: 'Negocios cuyo sistema actual ya no soporta el volumen de operación o que necesitan mayor estabilidad.', tags: ['AWS','DevOps'],
+      keywords: ['mi sistema se cae','se cae la pagina','no aguanta el trafico','servidor lento','necesito infraestructura','quiero escalar','mi pagina se cae mucho'],
+      steps: [
+        { type:'intake', label:'Identificamos qué pone en riesgo tu operación' },
+        { type:'data', label:'Definimos tipo de negocio y volumen de uso' },
+        { type:'audit', label:'Revisamos tu infraestructura actual y sus límites' },
+        { type:'strategy', label:'Diseñamos arquitectura escalable y plan de migración' },
+        { type:'delivery', label:'Migramos con monitoreo y respaldo activo' }
+      ] },
     en: { title: 'Cloud & Infrastructure', desc: 'Scalable architecture that grows with your business.',
       problem: 'Your system crashes during your busiest sales moments, or you feel like "something is about to break" because everything runs on improvised infrastructure.',
       includes: ['Migration to cloud infrastructure', 'Automated backup configuration', 'Monitoring and uptime alerts', 'Architecture built to scale'],
-      ideal: 'Businesses whose current system can no longer handle their operating volume or need greater stability.', tags: ['AWS','DevOps'] }
+      ideal: 'Businesses whose current system can no longer handle their operating volume or need greater stability.', tags: ['AWS','DevOps'],
+      keywords: ['my system crashes','site goes down','cant handle traffic','slow server','need infrastructure','need to scale'],
+      steps: [
+        { type:'intake', label:'We identify what\'s putting your operation at risk' },
+        { type:'data', label:'We define business type and usage volume' },
+        { type:'audit', label:'We review your current infrastructure and its limits' },
+        { type:'strategy', label:'We design scalable architecture and a migration plan' },
+        { type:'delivery', label:'We migrate with active monitoring and backups' }
+      ] }
   },
   {
     num: '07',
     es: { title: 'Automatización & IA', desc: 'Flujos inteligentes que eliminan trabajo manual repetitivo.',
       problem: 'Alguien en tu equipo dedica horas cada semana a tareas repetitivas — capturar datos, enviar mensajes, generar reportes — que un sistema podría hacer solo.',
       includes: ['Automatización de flujos con herramientas como n8n o Make', 'Bots de WhatsApp, email o Telegram', 'Procesamiento automático de documentos', 'IA aplicada a clasificación o predicción'],
-      ideal: 'Negocios donde el equipo pierde tiempo valioso en tareas que no requieren criterio humano.', tags: ['RPA','IA'] },
+      ideal: 'Negocios donde el equipo pierde tiempo valioso en tareas que no requieren criterio humano.', tags: ['RPA','IA'],
+      keywords: ['perder tiempo','tareas repetitivas','quiero automatizar','necesito un bot','whatsapp automatico','inteligencia artificial','ahorrar tiempo','mi equipo pierde tiempo'],
+      steps: [
+        { type:'intake', label:'Identificamos qué tareas le quitan tiempo a tu equipo' },
+        { type:'data', label:'Definimos tipo de negocio y volumen de tareas' },
+        { type:'audit', label:'Mapeamos tu proceso manual actual paso a paso' },
+        { type:'strategy', label:'Diseñamos el flujo automatizado o bot necesario' },
+        { type:'delivery', label:'Activamos la automatización y medimos el tiempo ahorrado' }
+      ] },
     en: { title: 'Automation & AI', desc: 'Intelligent workflows that eliminate repetitive manual work.',
       problem: 'Someone on your team spends hours every week on repetitive tasks — entering data, sending messages, generating reports — that a system could handle on its own.',
       includes: ['Workflow automation with tools like n8n or Make', 'WhatsApp, email, or Telegram bots', 'Automatic document processing', 'AI applied to classification or prediction'],
-      ideal: 'Businesses where the team loses valuable time on tasks that don\'t require human judgment.', tags: ['RPA','AI'] }
+      ideal: 'Businesses where the team loses valuable time on tasks that don\'t require human judgment.', tags: ['RPA','AI'],
+      keywords: ['wasting time','repetitive tasks','want to automate','need a bot','whatsapp bot','artificial intelligence','save time','my team wastes time'],
+      steps: [
+        { type:'intake', label:'We identify which tasks are eating your team\'s time' },
+        { type:'data', label:'We define business type and task volume' },
+        { type:'audit', label:'We map your current manual process step by step' },
+        { type:'strategy', label:'We design the automated workflow or bot needed' },
+        { type:'delivery', label:'We activate the automation and measure time saved' }
+      ] }
   },
   {
     num: '08',
     es: { title: 'Mejoras a Excel & Hojas de Cálculo', desc: 'Optimizamos lo que ya usas todos los días.',
       problem: 'Tu Excel funciona, pero es lento, propenso a errores, y depende de que una sola persona sepa usarlo — si esa persona falta, el proceso se detiene.',
       includes: ['Plantillas inteligentes con fórmulas avanzadas', 'Dashboards dentro de Excel o Google Sheets', 'Automatización con macros o Apps Script', 'Documentación para que cualquiera lo use'],
-      ideal: 'Negocios que aún no necesitan un sistema completo, pero quieren que su Excel deje de ser un riesgo operativo.', tags: ['Excel','Sheets','Macros'] },
+      ideal: 'Negocios que aún no necesitan un sistema completo, pero quieren que su Excel deje de ser un riesgo operativo.', tags: ['Excel','Sheets','Macros'],
+      keywords: ['mi excel es un desastre','hojas de calculo','excel lento','formulas','necesito una plantilla','mi excel esta desordenado'],
+      steps: [
+        { type:'intake', label:'Revisamos cómo usas tu Excel hoy' },
+        { type:'data', label:'Definimos tipo de negocio y quién lo usa' },
+        { type:'audit', label:'Identificamos errores, riesgos y cuellos de botella' },
+        { type:'strategy', label:'Diseñamos plantillas, fórmulas y automatizaciones' },
+        { type:'delivery', label:'Entregamos tu hoja optimizada y documentada' }
+      ] },
     en: { title: 'Excel & Spreadsheet Improvements', desc: 'We optimize what you already use every day.',
       problem: 'Your spreadsheet works, but it\'s slow, error-prone, and depends on one person knowing how to use it — if that person is out, the process stops.',
       includes: ['Smart templates with advanced formulas', 'Dashboards inside Excel or Google Sheets', 'Automation with macros or Apps Script', 'Documentation so anyone can use it'],
-      ideal: 'Businesses that don\'t need a full system yet, but want their spreadsheet to stop being an operational risk.', tags: ['Excel','Sheets','Macros'] }
+      ideal: 'Businesses that don\'t need a full system yet, but want their spreadsheet to stop being an operational risk.', tags: ['Excel','Sheets','Macros'],
+      keywords: ['my spreadsheet is a mess','spreadsheets','excel is slow','formulas','need a template','my excel is disorganized'],
+      steps: [
+        { type:'intake', label:'We review how you use your spreadsheet today' },
+        { type:'data', label:'We define business type and who uses it' },
+        { type:'audit', label:'We identify errors, risks and bottlenecks' },
+        { type:'strategy', label:'We design templates, formulas and automations' },
+        { type:'delivery', label:'We deliver your optimized, documented spreadsheet' }
+      ] }
   }
 ];
+
+// Merge the external bot-knowledge.js vocabulary into each service's
+// keyword list, so the library can keep growing without touching SERVICES.
+if(typeof BOT_KEYWORDS !== 'undefined'){
+  SERVICES.forEach((s,i)=>{
+    const extra = BOT_KEYWORDS[i];
+    if(!extra) return;
+    s.es.keywords = [...(s.es.keywords||[]), ...(extra.es||[])];
+    s.en.keywords = [...(s.en.keywords||[]), ...(extra.en||[])];
+  });
+}
 
 /* ============================================================
    CAROUSEL — auto-scrolling marquee, draggable, clickable, looping
@@ -1477,7 +1879,7 @@ function renderServiceRows(){
   SERVICES.forEach((s, i)=>{
     const t = s[currentLang];
     html += `
-      <div class="svc-row reveal in">
+      <div class="svc-row reveal in" data-index="${i}" style="cursor:pointer;">
         <div class="svc-num">${s.num}</div>
         <div class="svc-main">
           <h3>${t.title}</h3>
@@ -1488,6 +1890,11 @@ function renderServiceRows(){
   });
   svcList.innerHTML = html;
 }
+svcList.addEventListener('click', (e)=>{
+  const row = e.target.closest('.svc-row');
+  if(!row) return;
+  openPresentation(parseInt(row.dataset.index));
+});
 
 let carPos = 0;
 let autoSpeed = 0.45; // px per frame, continuous drift like the old marquee
@@ -1560,49 +1967,331 @@ carViewport.addEventListener('touchend', ()=>{
   isDragging = false; isPaused = false;
 });
 
-// click card → open modal (but not if it was a drag)
+// click card → open fullscreen presentation directly (but not if it was a drag)
 carTrack.addEventListener('click', (e)=>{
   if(hasDragged) return;
   const card = e.target.closest('.car-card');
   if(!card) return;
-  openModal(parseInt(card.dataset.index));
+  openPresentation(parseInt(card.dataset.index));
 });
 
 /* ============================================================
-   MODAL
+   STEP SEQUENCE — simulated screen mockups per process step
    ============================================================ */
-const modalOverlay = document.getElementById('modalOverlay');
-const modalClose = document.getElementById('modalClose');
+function mockupHTML(type){
+  switch(type){
+    case 'intake':
+      return `<div class="mockup"><div class="mockup-chrome"><span></span><span></span><span></span></div>
+        <div class="m-line w80"></div><div class="m-line w60"></div>
+        <div class="m-row"><span class="m-check">✓</span><div class="m-line w40"></div></div></div>`;
+    case 'data':
+      return `<div class="mockup"><div class="m-row"><span class="m-avatar"></span><div style="flex:1;"><div class="m-line w80"></div><div class="m-line w60" style="margin-bottom:0;"></div></div></div><span class="m-tag">● DATA</span></div>`;
+    case 'audit':
+      return `<div class="mockup"><div class="mockup-chrome"><span></span><span></span><span></span></div><div class="m-bars"><i style="height:40%"></i><i style="height:70%" class="lit"></i><i style="height:50%"></i><i style="height:85%" class="lit"></i><i style="height:30%"></i></div></div>`;
+    case 'strategy':
+      return `<div class="mockup"><div class="m-nodes">
+        <span class="m-node" style="top:2px;left:6px;"></span>
+        <span class="m-node lit" style="top:18px;left:55px;"></span>
+        <span class="m-node" style="top:34px;left:10px;"></span>
+        <span class="m-node" style="top:6px;right:8px;"></span>
+        <span class="m-edge" style="top:8px;left:12px;width:48px;transform:rotate(18deg);"></span>
+        <span class="m-edge" style="top:23px;left:62px;width:40px;transform:rotate(-12deg);"></span>
+        <span class="m-edge" style="top:36px;left:18px;width:44px;transform:rotate(-22deg);"></span>
+      </div></div>`;
+    case 'delivery':
+      return `<div class="mockup"><div class="m-chart"><svg viewBox="0 0 100 40" preserveAspectRatio="none"><polyline points="0,32 20,24 40,28 60,12 80,16 100,4" fill="none" stroke="#B8763F" stroke-width="2"/></svg></div><div class="m-badge-ok">✓</div></div>`;
+    default:
+      return '<div class="mockup"></div>';
+  }
+}
+function renderStepSeq(index, compact){
+  const t = SERVICES[index][currentLang];
+  const steps = t.steps || [];
+  if(compact){
+    return `<div class="step-seq-compact">` + steps.map((st,idx)=>`
+      <div class="step-card-compact">
+        ${mockupHTML(st.type)}
+        <div class="step-card-label"><strong>${idx+1}.</strong> ${st.label}</div>
+      </div>`).join('') + `</div>`;
+  }
+  return `<div class="step-seq">` + steps.map((st,idx)=>`
+      <div class="step-card">
+        ${mockupHTML(st.type)}
+        <div class="step-card-num">${String(idx+1).padStart(2,'0')}</div>
+        <div class="step-card-label">${st.label}</div>
+      </div>`).join('') + `</div>`;
+}
 
-function openModal(index){
-  const s = SERVICES[index];
-  const t = s[currentLang];
-  document.getElementById('modalNum').textContent = s.num;
-  document.getElementById('modalTitle').textContent = t.title;
-  document.getElementById('modalDesc').textContent = t.desc;
-  document.getElementById('modalProblem').textContent = t.problem;
-  document.getElementById('modalIdeal').textContent = t.ideal;
-  const includesList = document.getElementById('modalIncludes');
-  includesList.innerHTML = t.includes.map(i => `<li>${i}</li>`).join('');
+/* ============================================================
+   PRESENTATION MODE — fullscreen animated slide deck
+   ============================================================ */
+let presServiceIndex = 0;
+let presStepIndex = 0;
+const presentationOverlay = document.getElementById('presentationOverlay');
+const presStage = document.getElementById('presStage');
 
-  modalOverlay.classList.add('open');
+function mockupBigHTML(type){
+  switch(type){
+    case 'intake':
+      return `<div class="pres-mockup pres-m-intake">
+        <div class="pm-chrome"><span></span><span></span><span></span></div>
+        <div class="pm-line" style="--w:85%"></div>
+        <div class="pm-line" style="--w:60%"></div>
+        <div class="pm-check-row"><span class="pm-check">✓</span><div class="pm-line" style="--w:45%"></div></div>
+      </div>`;
+    case 'data':
+      return `<div class="pres-mockup pres-m-data">
+        <div class="pm-avatar-ring"></div>
+        <div class="pm-tagrow"><span class="pm-tag">NEGOCIO</span><span class="pm-tag">PRIORIDAD</span></div>
+      </div>`;
+    case 'audit':
+      return `<div class="pres-mockup pres-m-audit">
+        <div class="pm-scan"></div>
+        <div class="pm-bars">
+          <i style="--h:35%"></i><i style="--h:65%" class="lit"></i><i style="--h:48%"></i>
+          <i style="--h:90%" class="lit"></i><i style="--h:55%"></i><i style="--h:75%" class="lit"></i>
+        </div>
+      </div>`;
+    case 'strategy':
+      return `<div class="pres-mockup pres-m-strategy">
+        <svg viewBox="0 0 300 180">
+          <line class="pm-edge" x1="40" y1="30" x2="150" y2="90"/>
+          <line class="pm-edge" x1="150" y1="90" x2="260" y2="40"/>
+          <line class="pm-edge" x1="150" y1="90" x2="70" y2="150"/>
+          <line class="pm-edge" x1="150" y1="90" x2="240" y2="150"/>
+          <circle class="pm-node" cx="40" cy="30" r="5"/>
+          <circle class="pm-node lit" cx="150" cy="90" r="7"/>
+          <circle class="pm-node" cx="260" cy="40" r="5"/>
+          <circle class="pm-node" cx="70" cy="150" r="5"/>
+          <circle class="pm-node" cx="240" cy="150" r="5"/>
+        </svg>
+      </div>`;
+    case 'delivery':
+      return `<div class="pres-mockup pres-m-delivery">
+        <svg viewBox="0 0 280 120" preserveAspectRatio="none">
+          <polyline class="pm-path" points="0,95 47,78 93,87 140,48 187,62 233,26 280,12"/>
+        </svg>
+        <div class="pm-badge">✓</div>
+      </div>`;
+    default:
+      return '<div class="pres-mockup"></div>';
+  }
+}
+
+function presTotalSlides(){
+  return SERVICES[presServiceIndex][currentLang].steps.length + 1; // +1 = summary slide
+}
+
+function renderPresSlide(){
+  const svc = SERVICES[presServiceIndex];
+  const t = svc[currentLang];
+  const steps = t.steps || [];
+  const total = steps.length + 1;
+  const isSummary = presStepIndex === steps.length;
+
+  if(isSummary){
+    const includesHtml = t.includes.map(i => `<li>${i}</li>`).join('');
+    presStage.innerHTML = `
+      <div class="pres-slide pres-slide-summary">
+        <div class="pres-eyebrow">${t.title} — ${currentLang==='es' ? 'Resumen' : 'Summary'}</div>
+        <div class="pres-summary-grid">
+          <div class="pres-summary-col">
+            <div class="pres-summary-label">${I18N[currentLang]['modal.problemLabel']}</div>
+            <p class="pres-summary-text">${t.problem}</p>
+            <div class="pres-summary-label">${I18N[currentLang]['modal.idealLabel']}</div>
+            <p class="pres-summary-text">${t.ideal}</p>
+          </div>
+          <div class="pres-summary-col">
+            <div class="pres-summary-label">${I18N[currentLang]['modal.includesLabel']}</div>
+            <ul class="pres-summary-list">${includesHtml}</ul>
+          </div>
+        </div>
+        <a href="#cta" class="pres-trigger pres-summary-cta" data-sound="confirm" onclick="closePresentation()">${I18N[currentLang]['modal.cta']}</a>
+      </div>`;
+  } else {
+    const step = steps[presStepIndex];
+    const stepText = currentLang === 'es'
+      ? `Paso ${presStepIndex+1} de ${steps.length}`
+      : `Step ${presStepIndex+1} of ${steps.length}`;
+    presStage.innerHTML = `
+      <div class="pres-slide">
+        <div class="pres-bg-num">${String(presStepIndex+1).padStart(2,'0')}</div>
+        <div class="pres-eyebrow">${t.title} — ${stepText}</div>
+        <div class="pres-visual-wrap"><div class="pres-glow"></div>${mockupBigHTML(step.type)}</div>
+        <div class="pres-title">${step.label}</div>
+      </div>`;
+  }
+
+  document.getElementById('presCounter').innerHTML = `<em>${String(presStepIndex+1).padStart(2,'0')}</em> / ${String(total).padStart(2,'0')}`;
+  document.getElementById('presServiceName').textContent = t.title;
+  document.getElementById('presPrev').classList.toggle('disabled', presStepIndex === 0);
+  document.getElementById('presNext').classList.toggle('disabled', presStepIndex === total - 1);
+  renderPresDots(total);
+}
+function renderPresDots(total){
+  const dots = document.getElementById('presDots');
+  dots.innerHTML = '';
+  for(let i=0; i<total; i++){
+    const d = document.createElement('span');
+    d.className = 'pres-dot' + (i === presStepIndex ? ' active' : '');
+    d.addEventListener('click', ()=>{ presStepIndex = i; renderPresSlide(); initAudio(); playUIBlip(); });
+    dots.appendChild(d);
+  }
+}
+function openPresentation(serviceIndex){
+  presServiceIndex = serviceIndex;
+  presStepIndex = 0;
+  renderPresSlide();
+  presentationOverlay.classList.add('open');
   document.body.classList.add('modal-open');
   initAudio();
-  playUIBlip();
+  playConfirm();
 }
-function closeModal(){
-  modalOverlay.classList.remove('open');
+function closePresentation(){
+  presentationOverlay.classList.remove('open');
   document.body.classList.remove('modal-open');
   playUIBlip();
 }
-modalClose.addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', (e)=>{
-  if(e.target === modalOverlay) closeModal();
-});
+function presNextSlide(){
+  const total = presTotalSlides();
+  if(presStepIndex < total - 1){ presStepIndex++; renderPresSlide(); initAudio(); playUIBlip(); }
+}
+function presPrevSlide(){
+  if(presStepIndex > 0){ presStepIndex--; renderPresSlide(); initAudio(); playUIBlip(); }
+}
+document.getElementById('presClose').addEventListener('click', closePresentation);
+document.getElementById('presNext').addEventListener('click', presNextSlide);
+document.getElementById('presPrev').addEventListener('click', presPrevSlide);
+presentationOverlay.addEventListener('click', (e)=>{ if(e.target === presentationOverlay) closePresentation(); });
 document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape' && modalOverlay.classList.contains('open')) closeModal();
+  if(!presentationOverlay.classList.contains('open')) return;
+  if(e.key === 'Escape') closePresentation();
+  if(e.key === 'ArrowRight') presNextSlide();
+  if(e.key === 'ArrowLeft') presPrevSlide();
 });
-document.getElementById('modalCta').addEventListener('click', closeModal);
+
+/* ============================================================
+   LEAD DELIVERY — EmailJS (free tier), with mailto as fallback
+   ============================================================
+   SETUP (one time, ~5 minutes):
+   1. Create a free account at https://www.emailjs.com
+   2. Email Services → Add New Service → connect the inbox where
+      you want to receive leads (e.g. Gmail with hola@nexova.gt).
+      Copy the Service ID it gives you.
+   3. Email Templates → Create New Template. Use variables that
+      match the payload keys sent below, e.g. in the template body:
+        From: {{name}} ({{email}} / {{phone}})
+        Subject: {{subject}}
+        Message: {{message}}
+      (any other key from the payload — company, areas, problem,
+      otherMsg, budget, timeline, contact, source — can be used the
+      same way: {{company}}, {{areas}}, etc.)
+      Copy the Template ID.
+   4. Account → General → copy your Public Key.
+   5. Paste the three values below, replacing the placeholders.
+   Until this is configured, every form below automatically falls
+   back to opening a pre-filled email draft (mailto) instead.
+   ============================================================ */
+const EMAILJS_SERVICE_ID  = 'service_avmekq8';
+const EMAILJS_TEMPLATE_ID = 'template_sfmlc6n';
+const EMAILJS_PUBLIC_KEY  = 'Prvx-uGZhX-vrkrG8';
+
+if(typeof emailjs !== 'undefined' && !EMAILJS_PUBLIC_KEY.startsWith('REPLACE_')){
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+}
+
+async function sendLead(payload){
+  const notConfigured = [EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, EMAILJS_PUBLIC_KEY].some(v => v.startsWith('REPLACE_'));
+  if(notConfigured || typeof emailjs === 'undefined') return { ok:false };
+  try{
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, payload);
+    return { ok:true };
+  }catch(err){
+    return { ok:false };
+  }
+}
+
+/* ============================================================
+   BOT BRAIN — Supabase (free tier): live-editable keyword library,
+   custom Q&A, and automatic logging of unresolved questions.
+   ============================================================
+   SETUP (one time, ~5 minutes):
+   1. Create a free project at https://supabase.com
+   2. Dashboard → SQL Editor → paste the contents of
+      supabase-setup.sql (in this same folder) → Run.
+      That creates the 3 tables with the correct security policies.
+   3. Dashboard → Project Settings → API → copy the "Project URL"
+      and the "anon public" key.
+   4. Paste both below, replacing the placeholders.
+   From then on:
+     - Add rows to "bot_keywords" or "bot_qa" in the Table Editor
+       any time you want the bot to recognize something new — no
+       code changes, no redeploy.
+     - Read the "bot_missed_queries" table any time to see exactly
+       what people asked that the bot couldn't answer.
+   Until configured, the bot keeps working fully offline using only
+   bot-knowledge.js — this is a progressive upgrade, not a dependency.
+   ============================================================ */
+const SUPABASE_URL      = 'https://ztsdekwkazwgpwsbbdbd.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_RtSZHIzRcAip19fGX2xYYg_P6J1Y9UQ';
+
+const supabaseReady = !SUPABASE_URL.startsWith('REPLACE_') && !SUPABASE_ANON_KEY.startsWith('REPLACE_');
+
+let BOT_QA = []; // [{ lang, trigger_phrase, response }]
+
+async function loadCloudBotBrain(){
+  if(!supabaseReady) return;
+  try{
+    const headers = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` };
+
+    const kwRes = await fetch(`${SUPABASE_URL}/rest/v1/bot_keywords?select=service_index,lang,phrase`, { headers });
+    if(kwRes.ok){
+      const rows = await kwRes.json();
+      rows.forEach(r=>{
+        const svc = SERVICES[r.service_index];
+        if(!svc || !svc[r.lang]) return;
+        svc[r.lang].keywords = svc[r.lang].keywords || [];
+        svc[r.lang].keywords.push(r.phrase);
+      });
+    }
+
+    const qaRes = await fetch(`${SUPABASE_URL}/rest/v1/bot_qa?select=lang,trigger_phrase,response&active=eq.true`, { headers });
+    if(qaRes.ok){
+      BOT_QA = await qaRes.json();
+    }
+  }catch(err){
+    // Cloud brain unreachable — bot keeps running on the local library.
+  }
+}
+
+function logMissedQuery(query){
+  if(!supabaseReady) return;
+  fetch(`${SUPABASE_URL}/rest/v1/bot_missed_queries`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ query, lang: currentLang })
+  }).catch(()=>{ /* best-effort, never blocks the chat */ });
+}
+
+function matchCustomQA(query){
+  const qWords = new Set(contentWords(query));
+  let best = -1, bestScore = 0;
+  BOT_QA.forEach((row, i)=>{
+    const kWords = contentWords(row.trigger_phrase);
+    if(kWords.length === 0) return;
+    let overlap = 0;
+    kWords.forEach(w=>{ if(qWords.has(w)) overlap++; });
+    const score = overlap / kWords.length; // fraction of the trigger phrase matched
+    if(score > bestScore){ bestScore = score; best = i; }
+  });
+  return bestScore >= 0.6 ? BOT_QA[best] : null;
+}
+
+loadCloudBotBrain();
 
 /* ============================================================
    CONTACT FORM
@@ -1659,7 +2348,7 @@ cfAreaGrid.addEventListener('click', (e)=>{
   initAudio(); playUIBlip();
 });
 
-contactForm.addEventListener('submit', (e)=>{
+contactForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
 
   const name = document.getElementById('cf-name').value.trim();
@@ -1687,13 +2376,444 @@ Teléfono: ${phone || '—'}
   body += `\n\nPresupuesto: ${budget || '—'}
 Plazo: ${timeline || '—'}`;
 
-  window.location.href = `mailto:hola@nexova.gt?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
   initAudio();
+  const btnSubmit = contactForm.querySelector('.cf-submit');
+  if(btnSubmit) btnSubmit.disabled = true;
+
+  const result = await sendLead({
+    subject, name, company, email, phone, areas, problem, otherMsg, budget, timeline
+  });
+
+  if(!result.ok){
+    window.location.href = `mailto:hola@nexova.gt?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+
   playConfirm();
   contactForm.style.display = 'none';
   cfSuccess.classList.add('show');
 });
+
+/* ============================================================
+   AI ASSISTANT BOT — scripted, data-driven (no external API)
+   ============================================================ */
+const BOT_TXT = {
+  es: {
+    status: 'EN LÍNEA',
+    role: 'Asistente',
+    greet1: 'Hola 👋 Soy el asistente de NEXOVA. Puedo darte un tour por lo que hacemos, mostrarte ejemplos reales por área, explicarte cómo trabajamos, o conectarte con el equipo.',
+    greet2: '¿Por dónde te gustaría empezar?',
+    menuTour: '🧭 Tour por las 8 disciplinas',
+    menuExamples: '💡 Ver un ejemplo por área',
+    menuProcess: '⚙️ ¿Cómo trabajan?',
+    menuContact: '✉️ Hablar con el equipo',
+    menuBack: '← Menú principal',
+    tourIntro: 'Estas son las 8 disciplinas que cubrimos — todas conectadas entre sí, nada tercerizado:',
+    tourStep: (n,total)=>`Disciplina ${n} de ${total}`,
+    tourNext: 'Siguiente →',
+    tourExample: 'Ver ejemplo de esta área',
+    tourPrev: '← Anterior',
+    tourEnd: 'Esas son las 8 — ¿quieres ver un ejemplo concreto de alguna, conocer el proceso, o prefieres contarnos directamente tu caso?',
+    examplesIntro: '¿De qué área quieres ver un ejemplo aplicado a un negocio real?',
+    exampleTitle: (t)=>`Ejemplo aplicado — ${t}`,
+    exampleSolves: 'Así lo resolvemos',
+    exampleProcess: 'Así se ve el proceso paso a paso:',
+    presBtn: '🖥️ Ver presentación en pantalla completa',
+    exampleAgain: '¿Quieres ver otro ejemplo?',
+    processIntro: 'Trabajamos en 5 pasos, con entregables visibles desde la primera semana — sin sorpresas en el camino:',
+    contactMsg: 'Con gusto. Tienes dos caminos: ir al formulario completo para dejar todos los detalles de tu proyecto, o si prefieres algo más rápido, te hago aquí mismo tres preguntas cortas.',
+    contactBtn: 'Ir al formulario de contacto →',
+    directWhatsapp: '💬 Hablar por WhatsApp ahora',
+    fallback1: 'Buena pregunta — para darte una respuesta realmente precisa sobre tu caso, lo mejor es que el equipo la revise directamente. Tienes dos caminos:',
+    clarifyGuess: (title)=>`Creo que esto podría ayudarte: <strong>${title}</strong>. ¿Es lo que buscas?`,
+    clarifyYes: 'Sí, eso es',
+    goToFullForm: '📋 Ir al formulario completo →',
+    quickDescribe: '✏️ Dejarlo rápido aquí mismo',
+    askName: 'Perfecto. ¿Cuál es tu nombre?',
+    askContact: 'Gracias — ¿y tu email o WhatsApp para contactarte?',
+    askDescription: 'Por último, cuéntanos brevemente qué necesitas o qué te gustaría resolver.',
+    captureSent: '¡Listo! Tu solicitud fue enviada directo a nuestro equipo — te contactaremos en menos de 24 horas.',
+    captureFailed: 'Tu solicitud quedó registrada en esta conversación, pero no pudimos enviarla automáticamente. Para no perder el hilo, hablemos por WhatsApp:',
+    placeholder: 'Escribe tu pregunta...'
+  },
+  en: {
+    status: 'ONLINE',
+    role: 'Assistant',
+    greet1: 'Hi 👋 I\'m the NEXOVA assistant. I can give you a tour of what we do, show real examples by area, explain how we work, or connect you with the team.',
+    greet2: 'Where would you like to start?',
+    menuTour: '🧭 Tour of our 8 disciplines',
+    menuExamples: '💡 See an example by area',
+    menuProcess: '⚙️ How do you work?',
+    menuContact: '✉️ Talk to the team',
+    menuBack: '← Main menu',
+    tourIntro: 'These are the 8 disciplines we cover — all connected to each other, nothing outsourced:',
+    tourStep: (n,total)=>`Discipline ${n} of ${total}`,
+    tourNext: 'Next →',
+    tourExample: 'See an example of this area',
+    tourPrev: '← Previous',
+    tourEnd: 'That\'s all 8 — want to see a concrete example of one, learn about our process, or tell us your case directly?',
+    examplesIntro: 'Which area would you like to see applied to a real business?',
+    exampleTitle: (t)=>`Applied example — ${t}`,
+    exampleSolves: 'Here\'s how we solve it',
+    exampleProcess: 'Here\'s what the process looks like, step by step:',
+    presBtn: '🖥️ View fullscreen presentation',
+    exampleAgain: 'Want to see another example?',
+    processIntro: 'We work in 5 steps, with visible deliverables from week one — no surprises along the way:',
+    contactMsg: 'Happy to help. You\'ve got two options: go to the full form to leave all the details of your project, or if you\'d rather go faster, I\'ll ask you three quick questions right here.',
+    contactBtn: 'Go to the contact form →',
+    directWhatsapp: '💬 Talk on WhatsApp now',
+    fallback1: 'Good question — to give you a truly precise answer for your case, it\'s best the team looks at it directly. You\'ve got two options:',
+    clarifyGuess: (title)=>`I think this might help: <strong>${title}</strong>. Is that what you're looking for?`,
+    clarifyYes: 'Yes, that\'s it',
+    goToFullForm: '📋 Go to the full form →',
+    quickDescribe: '✏️ Leave it quickly right here',
+    askName: 'Great. What\'s your name?',
+    askContact: 'Thanks — and your email or WhatsApp to reach you?',
+    askDescription: 'Last thing — briefly tell us what you need or what you\'d like to solve.',
+    captureSent: 'Done! Your request was sent straight to our team — we\'ll follow up in less than 24 hours.',
+    captureFailed: 'Your request is recorded in this conversation, but we couldn\'t send it automatically. So we don\'t lose the thread, let\'s talk on WhatsApp:',
+    placeholder: 'Type your question...'
+  }
+};
+function bt(key){ return BOT_TXT[currentLang][key]; }
+
+const botMessages = document.getElementById('botMessages');
+const botQuick = document.getElementById('botQuick');
+const botLauncher = document.getElementById('bot-launcher');
+const botPanel = document.getElementById('bot-panel');
+const botInputRow = document.getElementById('botInputRow');
+const botInput = document.getElementById('botInput');
+let botStarted = false;
+let tourIndex = 0;
+
+function addBotMessage(html){
+  const el = document.createElement('div');
+  el.className = 'bot-msg bot-msg-bot';
+  el.innerHTML = html;
+  botMessages.appendChild(el);
+  botMessages.scrollTop = botMessages.scrollHeight;
+}
+function addUserMessage(text){
+  const el = document.createElement('div');
+  el.className = 'bot-msg bot-msg-user';
+  el.textContent = text;
+  botMessages.appendChild(el);
+  botMessages.scrollTop = botMessages.scrollHeight;
+}
+function botTyping(callback){
+  const t = document.createElement('div');
+  t.className = 'bot-typing';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  botMessages.appendChild(t);
+  botMessages.scrollTop = botMessages.scrollHeight;
+  setTimeout(()=>{
+    t.remove();
+    callback();
+  }, 450 + Math.random()*350);
+}
+function setQuick(options){
+  botQuick.innerHTML = '';
+  options.forEach(opt=>{
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'bot-chip';
+    b.textContent = opt.label;
+    b.addEventListener('click', ()=>{
+      initAudio(); playUIBlip();
+      addUserMessage(opt.label);
+      botQuick.innerHTML = '';
+      botTyping(opt.action);
+    });
+    botQuick.appendChild(b);
+  });
+}
+
+function showMainMenu(){
+  addBotMessage(bt('greet2'));
+  setQuick([
+    { label: bt('menuTour'), action: ()=>startTour(0) },
+    { label: bt('menuExamples'), action: showExamplesMenu },
+    { label: bt('menuProcess'), action: showProcess },
+    { label: bt('menuContact'), action: showContact }
+  ]);
+}
+
+function startTour(i){
+  tourIndex = i;
+  const s = SERVICES[i];
+  const t = s[currentLang];
+  if(i === 0) addBotMessage(bt('tourIntro'));
+  addBotMessage(`<strong>${s.num} · ${t.title}</strong><br>${t.desc}<br><br><em>${bt('tourStep')(i+1, SERVICES.length)}</em>`);
+  const opts = [];
+  opts.push({ label: bt('tourExample'), action: ()=>showExample(i, startTourPrompt) });
+  if(i < SERVICES.length - 1) opts.push({ label: bt('tourNext'), action: ()=>startTour(i+1) });
+  if(i > 0) opts.push({ label: bt('tourPrev'), action: ()=>startTour(i-1) });
+  if(i === SERVICES.length - 1){
+    setQuick(opts);
+    setTimeout(()=>botTyping(()=>{
+      addBotMessage(bt('tourEnd'));
+      setQuick([
+        { label: bt('menuExamples'), action: showExamplesMenu },
+        { label: bt('menuProcess'), action: showProcess },
+        { label: bt('menuContact'), action: showContact },
+        { label: bt('menuBack'), action: showMainMenu }
+      ]);
+    }), 200);
+    return;
+  }
+  opts.push({ label: bt('menuBack'), action: showMainMenu });
+  setQuick(opts);
+}
+function startTourPrompt(){
+  setQuick([
+    { label: bt('tourNext'), action: ()=> tourIndex < SERVICES.length-1 ? startTour(tourIndex+1) : showMainMenu() },
+    { label: bt('menuBack'), action: showMainMenu }
+  ]);
+}
+
+function showExamplesMenu(){
+  addBotMessage(bt('examplesIntro'));
+  setQuick([
+    ...SERVICES.map((s,i)=>({ label: s[currentLang].title, action: ()=>showExample(i, showExamplesMenuAgain) })),
+    { label: bt('menuBack'), action: showMainMenu }
+  ]);
+}
+function showExamplesMenuAgain(){
+  addBotMessage(bt('exampleAgain'));
+  setQuick([
+    ...SERVICES.map((s,i)=>({ label: s[currentLang].title, action: ()=>showExample(i, showExamplesMenuAgain) })),
+    { label: bt('menuBack'), action: showMainMenu }
+  ]);
+}
+function showExample(i, nextAction, extraOptions){
+  const t = SERVICES[i][currentLang];
+  addBotMessage(`<strong>${bt('exampleTitle')(t.title)}</strong><br><br>${t.problem}<br><br><strong>${bt('exampleSolves')}:</strong><br>• ${t.includes.join('<br>• ')}`);
+  setTimeout(()=>botTyping(()=>{
+    addBotMessage(`<strong>${bt('exampleProcess')}</strong>${renderStepSeq(i, true)}`);
+    setQuick([
+      { label: bt('presBtn'), action: ()=>{ closeBotPanel(); openPresentation(i); } },
+      { label: bt('menuBack'), action: ()=>{
+          if(typeof nextAction === 'function') nextAction();
+          else showMainMenu();
+        }
+      },
+      ...(Array.isArray(extraOptions) ? extraOptions : [])
+    ]);
+  }), 350);
+}
+
+function showProcess(){
+  const steps = ['s1','s2','s3','s4','s5'].map((k,idx)=>
+    `${idx+1}. <strong>${I18N[currentLang]['process.'+k+'Title']}</strong> — ${I18N[currentLang]['process.'+k+'Desc']}`
+  ).join('<br>');
+  addBotMessage(bt('processIntro') + '<br><br>' + steps);
+  setQuick([
+    { label: bt('menuExamples'), action: showExamplesMenu },
+    { label: bt('menuContact'), action: showContact },
+    { label: bt('menuBack'), action: showMainMenu }
+  ]);
+}
+
+function showContact(){
+  addBotMessage(bt('contactMsg'));
+  setQuick([
+    { label: bt('goToFullForm'), action: goToFullForm },
+    { label: bt('quickDescribe'), action: ()=>startLeadCapture(null) },
+    { label: bt('directWhatsapp'), action: ()=> window.open('https://wa.me/50212345678', '_blank') },
+    { label: bt('menuBack'), action: showMainMenu }
+  ]);
+}
+
+const BOT_STOPWORDS = new Set(['necesito','necesitamos','quiero','queremos','quisiera','como','podrian','podria','puedes','pueden','ayudarme','ayudar','tengo','tener','saber','para','con','mis','mi','una','uno','unos','unas','que','les','nos','muy','algo','esta','esto','estos','del','las','los','por','sin','mas','ser','hay','soy','somos','sobre','todo','toda','todos','este','ese','eso','algun','alguna','tiene','tienen','poder','puede','pueda','the','for','with','about','need','needs','want','wants','how','can','could','you','your','help']);
+function normalize(str){
+  return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();
+}
+function contentWords(str){
+  return normalize(str).split(/\s+/).filter(w => w.length > 2 && !BOT_STOPWORDS.has(w));
+}
+function matchService(query){
+  const qWords = new Set(contentWords(query));
+  let best = -1, bestScore = 0;
+  SERVICES.forEach((s,i)=>{
+    const es = s.es, en = s.en;
+    const keywords = [...(es.keywords||[]), ...(en.keywords||[])];
+    let maxPhraseOverlap = 0;
+    keywords.forEach(k=>{
+      const kWords = contentWords(k);
+      if(kWords.length === 0) return;
+      let overlap = 0;
+      kWords.forEach(w=>{ if(qWords.has(w)) overlap++; });
+      if(overlap > maxPhraseOverlap) maxPhraseOverlap = overlap;
+    });
+    // mentioning the service's own name/category is just as strong a
+    // signal as matching a full pain-point phrase from the keywords list
+    const titleWords = new Set(contentWords([es.title, en.title].join(' ')));
+    const haystack = normalize([es.title,es.desc,...(es.tags||[]), en.title,en.desc,...(en.tags||[])].join(' '));
+    let bonus = 0, titleHits = 0;
+    qWords.forEach(w=>{
+      if(titleWords.has(w)) titleHits++;
+      else if(haystack.includes(w)) bonus += 0.3;
+    });
+    const score = maxPhraseOverlap * 3 + titleHits * 3 + bonus;
+    if(score > bestScore){ bestScore = score; best = i; }
+  });
+  return { index: bestScore > 0 ? best : -1, confident: bestScore >= 3 };
+}
+
+/* ── lead capture: name + contact + description, sent via EmailJS ── */
+let botCapture = null; // { stage:'name'|'contact'|'description', name, contact, description }
+
+function goToFullForm(){
+  closeBotPanel();
+  document.getElementById('cta').scrollIntoView({behavior:'smooth'});
+}
+
+function startLeadCapture(prefilledDescription){
+  botCapture = { stage: 'name', initialQuery: prefilledDescription || null, description: prefilledDescription || null };
+  botQuick.innerHTML = '';
+  addBotMessage(bt('askName'));
+}
+
+function buildLeadMessage(description, initialQuery){
+  const lines = [];
+  if(initialQuery && initialQuery !== description){
+    lines.push(currentLang === 'es' ? `Consulta inicial: ${initialQuery}` : `Initial query: ${initialQuery}`);
+  }
+  lines.push(currentLang === 'es' ? `Descripción: ${description}` : `Description: ${description}`);
+  const guess = matchService(initialQuery || description);
+  if(guess.index >= 0){
+    const label = currentLang === 'es' ? 'Posible área de interés' : 'Likely area of interest';
+    lines.push(`${label}: ${SERVICES[guess.index][currentLang].title}${guess.confident ? '' : ' (?)'}`);
+  }
+  lines.push(`${currentLang === 'es' ? 'Idioma' : 'Language'}: ${currentLang.toUpperCase()}`);
+  lines.push(`${currentLang === 'es' ? 'Fecha' : 'Date'}: ${new Date().toLocaleString(currentLang === 'es' ? 'es-GT' : 'en-US')}`);
+  return lines.join('\n');
+}
+
+async function submitCapturedLead(){
+  const { name, contact, description, initialQuery } = botCapture;
+  botCapture = null;
+  const subject = currentLang === 'es' ? `Consulta desde el asistente — ${name}` : `Inquiry from the assistant — ${name}`;
+  const message = buildLeadMessage(description, initialQuery);
+  const result = await sendLead({ subject, name, contact, message, source: 'bot' });
+  if(result.ok){
+    addBotMessage(bt('captureSent'));
+    setQuick([{ label: bt('menuBack'), action: showMainMenu }]);
+  } else {
+    addBotMessage(bt('captureFailed'));
+    setQuick([
+      { label: bt('directWhatsapp'), action: ()=> window.open('https://wa.me/50212345678', '_blank') },
+      { label: bt('menuBack'), action: showMainMenu }
+    ]);
+  }
+}
+
+function handleCaptureStep(val){
+  addUserMessage(val);
+  if(botCapture.stage === 'name'){
+    botCapture.name = val;
+    botCapture.stage = 'contact';
+    botTyping(()=> addBotMessage(bt('askContact')));
+    return;
+  }
+  if(botCapture.stage === 'contact'){
+    botCapture.contact = val;
+    if(botCapture.description){
+      botTyping(submitCapturedLead);
+    } else {
+      botCapture.stage = 'description';
+      botTyping(()=> addBotMessage(bt('askDescription')));
+    }
+    return;
+  }
+  // stage === 'description'
+  botCapture.description = val;
+  botTyping(submitCapturedLead);
+}
+
+function followupOptions(query){
+  return [
+    { label: bt('goToFullForm'), action: goToFullForm },
+    { label: bt('quickDescribe'), action: ()=>startLeadCapture(query) }
+  ];
+}
+
+function handleFreeText(text){
+  addUserMessage(text);
+  botQuick.innerHTML = '';
+
+  const customQA = matchCustomQA(text);
+  if(customQA){
+    botTyping(()=>{
+      addBotMessage(customQA.response);
+      setQuick([
+        { label: bt('menuExamples'), action: showExamplesMenu },
+        ...followupOptions(text)
+      ]);
+    });
+    return;
+  }
+
+  const { index, confident } = matchService(text);
+  botTyping(()=>{
+    if(index >= 0 && confident){
+      showExample(index, null, followupOptions(text));
+    } else if(index >= 0){
+      logMissedQuery(text);
+      addBotMessage(bt('clarifyGuess')(SERVICES[index][currentLang].title));
+      setQuick([
+        { label: bt('clarifyYes'), action: ()=>showExample(index, null, followupOptions(text)) },
+        { label: bt('menuExamples'), action: showExamplesMenu },
+        ...followupOptions(text)
+      ]);
+    } else {
+      logMissedQuery(text);
+      addBotMessage(bt('fallback1'));
+      setQuick([
+        { label: bt('menuTour'), action: ()=>startTour(0) },
+        { label: bt('menuExamples'), action: showExamplesMenu },
+        ...followupOptions(text)
+      ]);
+    }
+  });
+}
+
+function openBotPanel(){
+  botPanel.classList.add('open');
+  botLauncher.classList.add('open');
+  if(!botStarted){
+    botStarted = true;
+    initAudio();
+    botTyping(()=>{
+      addBotMessage(bt('greet1'));
+      setTimeout(()=>showMainMenu(), 250);
+    });
+  }
+}
+function closeBotPanel(){
+  botPanel.classList.remove('open');
+  botLauncher.classList.remove('open');
+}
+botLauncher.addEventListener('click', ()=>{
+  initAudio(); playUIBlip();
+  if(botPanel.classList.contains('open')) closeBotPanel();
+  else openBotPanel();
+});
+document.getElementById('botClose').addEventListener('click', ()=>{ playUIBlip(); closeBotPanel(); });
+botInputRow.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const val = botInput.value.trim();
+  if(!val) return;
+  botInput.value = '';
+  if(botCapture) handleCaptureStep(val);
+  else handleFreeText(val);
+});
+
+function updateBotStaticText(){
+  document.getElementById('botHeaderRole').textContent = bt('role');
+  document.getElementById('botHeaderStatus').textContent = bt('status');
+  botInput.placeholder = bt('placeholder');
+}
+updateBotStaticText();
 
 /* ============================================================
    INITIAL RENDER
