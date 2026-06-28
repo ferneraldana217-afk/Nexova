@@ -1607,6 +1607,7 @@ function applyLanguage(lang){
   renderServiceRows();
   renderAreaGrid();
   if(typeof updateBotStaticText === 'function') updateBotStaticText();
+  if(typeof restartBotConversation === 'function' && botStarted) restartBotConversation();
 }
 
 document.getElementById('langEs').addEventListener('click', ()=>{ initAudio(); playUIBlip(); applyLanguage('es'); });
@@ -2380,8 +2381,10 @@ Plazo: ${timeline || '—'}`;
   const btnSubmit = contactForm.querySelector('.cf-submit');
   if(btnSubmit) btnSubmit.disabled = true;
 
+  const contact = email + (phone ? ` / ${phone}` : '');
   const result = await sendLead({
-    subject, name, company, email, phone, areas, problem, otherMsg, budget, timeline
+    subject, name, contact, message: body,
+    company, email, phone, areas, problem, otherMsg, budget, timeline
   });
 
   if(!result.ok){
@@ -2894,6 +2897,26 @@ function updateBotStaticText(){
   botInput.placeholder = bt('placeholder');
 }
 updateBotStaticText();
+
+// Everything already printed in the chat stays in whatever language it
+// was written in — there's no clean way to retranslate free-form history.
+// Instead, when the language changes mid-conversation, restart the visible
+// chat in the new language. If we already know the visitor's name/contact,
+// skip straight to the main menu instead of asking again.
+function restartBotConversation(){
+  botMessages.innerHTML = '';
+  botQuick.innerHTML = '';
+  botIntro = null;
+  botCapture = null;
+  if(botUserName || botUserContact){
+    showMainMenu();
+  } else {
+    botTyping(()=>{
+      addBotMessage(bt('greet1'));
+      setTimeout(()=>startIntroCapture(), 250);
+    });
+  }
+}
 
 /* ============================================================
    INITIAL RENDER
