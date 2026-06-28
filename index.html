@@ -2400,8 +2400,13 @@ const BOT_TXT = {
   es: {
     status: 'EN LÍNEA',
     role: 'Asistente',
-    greet1: 'Hola 👋 Soy el asistente de NEXOVA. Puedo darte un tour por lo que hacemos, mostrarte ejemplos reales por área, explicarte cómo trabajamos, o conectarte con el equipo.',
-    greet2: '¿Por dónde te gustaría empezar?',
+    greet1: '¡Hola! 👋 Qué gusto que estés por aquí. Soy el asistente de NEXOVA — puedo darte un tour por lo que hacemos, mostrarte ejemplos reales, explicarte cómo trabajamos, o conectarte directo con el equipo.',
+    introAskName: 'Antes de seguir, ¿cómo te llamas? Así puedo dirigirme a ti de forma más personal — si prefieres no decirlo, también está bien.',
+    introSkip: 'Prefiero no decirlo',
+    introAskContact: (name)=> name
+      ? `Un gusto, ${name} 😊 Y solo para no perder el hilo si en algún momento se corta la conversación — ¿cuál es tu email o WhatsApp?`
+      : 'Sin problema. Una última cosa, también opcional — ¿cuál es tu email o WhatsApp, por si en algún momento quieres retomar esta conversación?',
+    greet2: (name)=> name ? `Bien, ${name} — ¿por dónde te gustaría empezar?` : '¿Por dónde te gustaría empezar?',
     menuTour: '🧭 Tour por las 8 disciplinas',
     menuExamples: '💡 Ver un ejemplo por área',
     menuProcess: '⚙️ ¿Cómo trabajan?',
@@ -2420,26 +2425,31 @@ const BOT_TXT = {
     presBtn: '🖥️ Ver presentación en pantalla completa',
     exampleAgain: '¿Quieres ver otro ejemplo?',
     processIntro: 'Trabajamos en 5 pasos, con entregables visibles desde la primera semana — sin sorpresas en el camino:',
-    contactMsg: 'Con gusto. Tienes dos caminos: ir al formulario completo para dejar todos los detalles de tu proyecto, o si prefieres algo más rápido, te hago aquí mismo tres preguntas cortas.',
+    contactMsg: 'Con todo gusto. Tienes dos caminos: ir al formulario completo para dejar todos los detalles de tu proyecto, o si prefieres algo más rápido, te hago aquí mismo un par de preguntas cortas.',
     contactBtn: 'Ir al formulario de contacto →',
     directWhatsapp: '💬 Hablar por WhatsApp ahora',
-    fallback1: 'Buena pregunta — para darte una respuesta realmente precisa sobre tu caso, lo mejor es que el equipo la revise directamente. Tienes dos caminos:',
-    clarifyGuess: (title)=>`Creo que esto podría ayudarte: <strong>${title}</strong>. ¿Es lo que buscas?`,
+    fallback1: 'Entiendo lo que necesitas, y quiero asegurarme de darte una respuesta que realmente te sirva — para eso, lo mejor es que el equipo la vea directamente. Tienes dos caminos:',
+    clarifyGuess: (title)=>`Creo que esto te puede servir: <strong>${title}</strong>. ¿Voy bien?`,
     clarifyYes: 'Sí, eso es',
     goToFullForm: '📋 Ir al formulario completo →',
     quickDescribe: '✏️ Dejarlo rápido aquí mismo',
-    askName: 'Perfecto. ¿Cuál es tu nombre?',
-    askContact: 'Gracias — ¿y tu email o WhatsApp para contactarte?',
-    askDescription: 'Por último, cuéntanos brevemente qué necesitas o qué te gustaría resolver.',
-    captureSent: '¡Listo! Tu solicitud fue enviada directo a nuestro equipo — te contactaremos en menos de 24 horas.',
-    captureFailed: 'Tu solicitud quedó registrada en esta conversación, pero no pudimos enviarla automáticamente. Para no perder el hilo, hablemos por WhatsApp:',
+    askName: 'Con gusto. ¿Cuál es tu nombre?',
+    askContact: (name)=> name ? `Gracias, ${name} — ¿cuál es tu email o WhatsApp para contactarte?` : '¿Cuál es tu email o WhatsApp para contactarte?',
+    askDescription: 'Por último, cuéntame con tus palabras qué necesitas o qué te gustaría resolver — no tiene que ser perfecto, yo me encargo de que llegue claro.',
+    captureSent: '¡Listo! Tu solicitud fue enviada directo a nuestro equipo — te van a contactar en menos de 24 horas.',
+    captureFailed: 'No te preocupes, no se perdió nada de lo que platicamos — solo que no pudimos enviarlo automáticamente. Para no cortar la conversación, sigamos por WhatsApp:',
     placeholder: 'Escribe tu pregunta...'
   },
   en: {
     status: 'ONLINE',
     role: 'Assistant',
-    greet1: 'Hi 👋 I\'m the NEXOVA assistant. I can give you a tour of what we do, show real examples by area, explain how we work, or connect you with the team.',
-    greet2: 'Where would you like to start?',
+    greet1: 'Hi! 👋 Glad you\'re here. I\'m the NEXOVA assistant — I can give you a tour of what we do, show real examples, explain how we work, or connect you straight with the team.',
+    introAskName: 'Before we go on, what\'s your name? That way I can address you more personally — and if you\'d rather not say, that\'s totally fine too.',
+    introSkip: 'I\'d rather not say',
+    introAskContact: (name)=> name
+      ? `Nice to meet you, ${name} 😊 Just so we don't lose the thread if the conversation ever gets cut off — what's your email or WhatsApp?`
+      : 'No problem. One last thing, also optional — what\'s your email or WhatsApp, in case you ever want to pick this conversation back up?',
+    greet2: (name)=> name ? `Alright, ${name} — where would you like to start?` : 'Where would you like to start?',
     menuTour: '🧭 Tour of our 8 disciplines',
     menuExamples: '💡 See an example by area',
     menuProcess: '⚙️ How do you work?',
@@ -2458,19 +2468,19 @@ const BOT_TXT = {
     presBtn: '🖥️ View fullscreen presentation',
     exampleAgain: 'Want to see another example?',
     processIntro: 'We work in 5 steps, with visible deliverables from week one — no surprises along the way:',
-    contactMsg: 'Happy to help. You\'ve got two options: go to the full form to leave all the details of your project, or if you\'d rather go faster, I\'ll ask you three quick questions right here.',
+    contactMsg: 'Happy to help. You\'ve got two options: go to the full form to leave all the details of your project, or if you\'d rather go faster, I\'ll ask you a couple of quick questions right here.',
     contactBtn: 'Go to the contact form →',
     directWhatsapp: '💬 Talk on WhatsApp now',
-    fallback1: 'Good question — to give you a truly precise answer for your case, it\'s best the team looks at it directly. You\'ve got two options:',
-    clarifyGuess: (title)=>`I think this might help: <strong>${title}</strong>. Is that what you're looking for?`,
+    fallback1: 'I hear what you need, and I want to make sure you get an answer that actually helps — for that, it\'s best the team looks at it directly. You\'ve got two options:',
+    clarifyGuess: (title)=>`I think this could help: <strong>${title}</strong>. Am I on the right track?`,
     clarifyYes: 'Yes, that\'s it',
     goToFullForm: '📋 Go to the full form →',
     quickDescribe: '✏️ Leave it quickly right here',
-    askName: 'Great. What\'s your name?',
-    askContact: 'Thanks — and your email or WhatsApp to reach you?',
-    askDescription: 'Last thing — briefly tell us what you need or what you\'d like to solve.',
-    captureSent: 'Done! Your request was sent straight to our team — we\'ll follow up in less than 24 hours.',
-    captureFailed: 'Your request is recorded in this conversation, but we couldn\'t send it automatically. So we don\'t lose the thread, let\'s talk on WhatsApp:',
+    askName: 'Happy to. What\'s your name?',
+    askContact: (name)=> name ? `Thanks, ${name} — what\'s your email or WhatsApp to reach you?` : 'What\'s your email or WhatsApp to reach you?',
+    askDescription: 'Last thing — tell me in your own words what you need or what you\'d like to solve. It doesn\'t have to be perfect, I\'ll make sure it comes through clearly.',
+    captureSent: 'Done! Your request was sent straight to our team — they\'ll reach out in less than 24 hours.',
+    captureFailed: 'Don\'t worry, nothing we talked about is lost — we just couldn\'t send it automatically. So we don\'t cut the conversation short, let\'s continue on WhatsApp:',
     placeholder: 'Type your question...'
   }
 };
@@ -2484,6 +2494,9 @@ const botInputRow = document.getElementById('botInputRow');
 const botInput = document.getElementById('botInput');
 let botStarted = false;
 let tourIndex = 0;
+let botUserName = null;
+let botUserContact = null;
+let botIntro = null; // { stage: 'name' | 'contact' } — soft, skippable intro capture
 
 function addBotMessage(html){
   const el = document.createElement('div');
@@ -2528,7 +2541,7 @@ function setQuick(options){
 }
 
 function showMainMenu(){
-  addBotMessage(bt('greet2'));
+  addBotMessage(bt('greet2')(botUserName));
   setQuick([
     { label: bt('menuTour'), action: ()=>startTour(0) },
     { label: bt('menuExamples'), action: showExamplesMenu },
@@ -2659,6 +2672,54 @@ function matchService(query){
   return { index: bestScore > 0 ? best : -1, confident: bestScore >= 3 };
 }
 
+/* ── soft intro capture: name + contact, asked once at the start of
+   every conversation, always skippable, never blocking ── */
+function logEarlyContact(){
+  if(!supabaseReady || (!botUserName && !botUserContact)) return;
+  fetch(`${SUPABASE_URL}/rest/v1/bot_contacts`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ name: botUserName, contact: botUserContact, lang: currentLang })
+  }).catch(()=>{ /* best-effort, never blocks the chat */ });
+}
+
+function startIntroCapture(){
+  botIntro = { stage: 'name' };
+  addBotMessage(bt('introAskName'));
+  setQuick([{ label: bt('introSkip'), action: skipIntroName }]);
+}
+function skipIntroName(){
+  botIntro.stage = 'contact';
+  addBotMessage(bt('introAskContact')(null));
+  setQuick([{ label: bt('introSkip'), action: skipIntroContact }]);
+}
+function skipIntroContact(){
+  finishIntro();
+}
+function finishIntro(){
+  botIntro = null;
+  logEarlyContact();
+  botTyping(showMainMenu);
+}
+function handleIntroStep(val){
+  addUserMessage(val);
+  if(botIntro.stage === 'name'){
+    botUserName = val;
+    botIntro.stage = 'contact';
+    botTyping(()=>{
+      addBotMessage(bt('introAskContact')(val));
+      setQuick([{ label: bt('introSkip'), action: skipIntroContact }]);
+    });
+    return;
+  }
+  botUserContact = val;
+  finishIntro();
+}
+
 /* ── lead capture: name + contact + description, sent via EmailJS ── */
 let botCapture = null; // { stage:'name'|'contact'|'description', name, contact, description }
 
@@ -2668,9 +2729,25 @@ function goToFullForm(){
 }
 
 function startLeadCapture(prefilledDescription){
-  botCapture = { stage: 'name', initialQuery: prefilledDescription || null, description: prefilledDescription || null };
+  botCapture = {
+    stage: botUserName ? (botUserContact ? 'description' : 'contact') : 'name',
+    name: botUserName || null,
+    contact: botUserContact || null,
+    initialQuery: prefilledDescription || null,
+    description: prefilledDescription || null
+  };
   botQuick.innerHTML = '';
-  addBotMessage(bt('askName'));
+
+  if(botCapture.stage === 'name'){
+    addBotMessage(bt('askName'));
+  } else if(botCapture.stage === 'contact'){
+    addBotMessage(bt('askContact')(botCapture.name));
+  } else if(!botCapture.description){
+    addBotMessage(bt('askDescription'));
+  } else {
+    // we already have name, contact and a description — nothing left to ask
+    botTyping(submitCapturedLead);
+  }
 }
 
 function buildLeadMessage(description, initialQuery){
@@ -2711,12 +2788,14 @@ function handleCaptureStep(val){
   addUserMessage(val);
   if(botCapture.stage === 'name'){
     botCapture.name = val;
+    botUserName = val;
     botCapture.stage = 'contact';
-    botTyping(()=> addBotMessage(bt('askContact')));
+    botTyping(()=> addBotMessage(bt('askContact')(val)));
     return;
   }
   if(botCapture.stage === 'contact'){
     botCapture.contact = val;
+    botUserContact = val;
     if(botCapture.description){
       botTyping(submitCapturedLead);
     } else {
@@ -2785,7 +2864,7 @@ function openBotPanel(){
     initAudio();
     botTyping(()=>{
       addBotMessage(bt('greet1'));
-      setTimeout(()=>showMainMenu(), 250);
+      setTimeout(()=>startIntroCapture(), 250);
     });
   }
 }
@@ -2804,7 +2883,8 @@ botInputRow.addEventListener('submit', (e)=>{
   const val = botInput.value.trim();
   if(!val) return;
   botInput.value = '';
-  if(botCapture) handleCaptureStep(val);
+  if(botIntro) handleIntroStep(val);
+  else if(botCapture) handleCaptureStep(val);
   else handleFreeText(val);
 });
 
